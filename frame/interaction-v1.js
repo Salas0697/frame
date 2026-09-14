@@ -4,7 +4,7 @@
   const dist=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
   const angle=(a,b)=>Math.atan2(b.clientY-a.clientY,b.clientX-a.clientX);
   const mid=(a,b)=>({x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2});
-  const sc=()=>Math.min(innerWidth-36,380)/340;
+  const sc=()=>framePreviewWidth()/340;
   let gestureActive=false;
 
   const style=document.createElement('style');
