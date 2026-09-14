@@ -43,15 +43,6 @@
     return out.length>=3?out:sorted;
   }
   const originalBuild=buildSlides;
-  buildSlides=function(){
-    const all=S.photos;
-    if(S.heroPhotoId){const hp=all.find(p=>p.id===S.heroPhotoId);if(hp)hp.score=Math.max(hp.score,1e7)}
-    if(S.smartSelect)S.photos=smartPhotos(all);
-    originalBuild();
-    const used=S.photos.length;
-    S.photos=all;
-    const lbl=$('#modeLabel'); if(lbl)lbl.textContent=`Director · ${used}/${all.length} fotos`;
-  };
 
   const originalPal=palFromPhoto;
   palFromPhoto=function(meta){

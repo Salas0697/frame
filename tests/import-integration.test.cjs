@@ -131,3 +131,33 @@ test('unavailable localStorage cannot prevent the brief from being installed',()
   try{h.select(batch(8));assert.ok(h.d.querySelector('#frameBrief').classList.contains('on'));assert.equal(h.calls(),0)}
   finally{h.close()}
 });
+
+test('template selector and caption use analyzed photos and survive persistence',async()=>{
+  const h=boot();
+  try {
+    h.select(batch(12));await h.complete();
+    const select=h.d.querySelector('#templateFamily');
+    assert.equal(select.options.length,9);
+    select.value='museum_notes';select.dispatchEvent(new h.w.Event('change',{bubbles:true}));
+    const s=h.w.__test.state();
+    assert.deepEqual(Array.from(s.slides,sl=>sl.layers.filter(l=>l.type==='img').length),[1,2,9]);
+    assert.equal(h.d.querySelectorAll('#stage [data-id]').length,12);
+    const before=s.slides.map(sl=>sl.layers.map(l=>l.id).join()).join('|');
+    const note=h.d.querySelector('#templateCaption');note.value='Museos, cafés y recuerdos.';
+    note.dispatchEvent(new h.w.Event('change',{bubbles:true}));
+    assert.equal(s.slides.map(sl=>sl.layers.filter(l=>l.type==='img').map(l=>l.id).join()).join('|'),before);
+    assert.equal(s.slides.flatMap(sl=>sl.layers).filter(l=>l.frameCaption).length,1);
+    // Locate the application record without relying on a preference-store key.
+    const records=Object.keys(h.w.localStorage).map(k=>{try{return JSON.parse(h.w.localStorage.getItem(k))}catch{return null}});
+    assert.ok(records.some(r=>r?.frameTemplateFamily==='museum_notes'&&r.frameCaption===note.value));
+    h.d.querySelector('#fastNewDesign').click();await new Promise(r=>h.w.requestAnimationFrame(r));
+    assert.equal(h.calls(),1);assert.equal(s.frameArtDirection,'museum_notes');
+    assert.ok(!h.d.querySelector('#frameBrief').classList.contains('on'));
+    assert.equal(s.slides.flatMap(sl=>sl.layers).filter(l=>l.frameCaption).length,1);
+    await new Promise(resolve=>setTimeout(resolve,220));
+    h.select(batch(2,12));assert.equal(select.disabled,true);
+    await h.complete();assert.equal(select.disabled,false);
+    const ids=new Set(s.slides.flatMap(sl=>sl.layers).filter(l=>l.type==='img').map(l=>l.photo.id));
+    assert.equal(ids.size,14);
+  } finally {h.close()}
+});

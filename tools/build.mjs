@@ -10,12 +10,13 @@ if (!core) throw new Error('Missing core script');
 const modules = [
   'photo-store.js', 'photo-import-controller.js', 'photo-analysis.js',
   'director-enhancements.js', 'interaction-v1.js', 'speed-v1.js',
-  'ux-rescue-v1.js', 'storyboard-v1.js', 'photo-editor-v2.js'
+  'ux-rescue-v1.js', 'template-engine.js', 'storyboard-v1.js', 'photo-editor-v2.js'
 ];
 const scripts = await Promise.all(modules.map(name => readFile(path.join(root, 'frame', name), 'utf8')));
 // A single content-addressed file keeps core, listeners and UI on the same revision.
 // No document.write(), eight-part HTML reconstruction, or mutable ?v=NN dependency chain.
-const bundle = [core[1], ...scripts].join('\n;\n');
+const catalog = JSON.parse(await readFile(path.join(root, 'frame/template-catalog.json'), 'utf8'));
+const bundle = [core[1], `window.FRAME_TEMPLATE_CATALOG=${JSON.stringify(catalog)};`, ...scripts].join('\n;\n');
 const hash = createHash('sha256').update(bundle).digest('hex').slice(0, 16);
 const filename = `frame.${hash}.js`;
 await mkdir(path.join(root, 'assets/runtime'), {recursive:true});
