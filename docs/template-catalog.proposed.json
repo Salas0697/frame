@@ -1,0 +1,796 @@
+{
+  "schemaVersion": 1,
+  "status": "research_proposal_not_loaded_by_runtime",
+  "researchedAt": "2026-09-14",
+  "referenceCommit": "dc04e1ef7b8d86cc2bda734d7a028dce305e8ff4",
+  "coordinateSystem": {
+    "units": "fractions_of_each_page",
+    "origin": "top_left",
+    "canvasAspect": [
+      4,
+      5
+    ],
+    "slots": "unrotated_image_rectangles",
+    "rotation": "degrees_about_center; validate_bounds_after_rotation",
+    "sourceSlice": "normalized_region_of_one_shared_composite_crop; continuous variants reuse a single photo intentionally"
+  },
+  "sources": {
+    "user_reference": {
+      "type": "user_supplied_screenshot",
+      "appIdentity": "unknown",
+      "observed": "One carousel page with nine photos, white margins, fine gutters and a small footer caption"
+    },
+    "scrl": {
+      "url": "https://apps.apple.com/us/app/scrl-photo-collage-maker/id1289057196",
+      "supports": "Structured and freeform collages, seamless panoramic carousels"
+    },
+    "unfold": {
+      "url": "https://play.google.com/store/apps/details?hl=en_US&id=com.moonlab.unfold",
+      "supports": "Template collections including Film; customizable text and backgrounds"
+    },
+    "tezza": {
+      "url": "https://apps.apple.com/us/app/tezza-aesthetic-photo-editor/id1393061654",
+      "supports": "Film, editorial, magazine, moodboard and minimal template families"
+    },
+    "canva": {
+      "url": "https://www.canva.com/photo-collages/templates/",
+      "supports": "Minimalist, travel, scrapbook and instant-photo-style collage examples"
+    }
+  },
+  "selection": {
+    "weightsMeaning": "Product hypotheses based on user preference, not usage statistics; renormalize after eligibility and brief filters",
+    "weightScope": "Primary album family, not independent random style on every page",
+    "capacity": "photoCount refers to distinct photos required for this variant",
+    "coverage": "Every selected photo must appear; never silently discard or duplicate to fill a grid",
+    "caption": "Optional user supplied text only; absent text leaves whitespace",
+    "density": "Evaluate outer whitespace separately from photos per page",
+    "crop": "Reject unsafe subject crops even when a template is otherwise preferred",
+    "anotherOption": "Reuse files, analysis and brief; vary sequence and layout without forcing a different family",
+    "integrationBoundary": "After PhotoImportController brief and analysis; no additional file event handlers"
+  },
+  "families": [
+    {
+      "id": "museum_notes",
+      "name": "Museum Notes",
+      "priority": 1,
+      "initialWeight": 30,
+      "preferPurpose": [
+        "memory",
+        "showcase",
+        "story"
+      ],
+      "preferVibe": [
+        "clean",
+        "natural"
+      ],
+      "variants": [
+        {
+          "id": "museum_9",
+          "photoCount": 9,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.065,
+              "w": 0.274667,
+              "h": 0.265733
+            },
+            {
+              "x": 0.362667,
+              "y": 0.065,
+              "w": 0.274667,
+              "h": 0.265733
+            },
+            {
+              "x": 0.645333,
+              "y": 0.065,
+              "w": 0.274667,
+              "h": 0.265733
+            },
+            {
+              "x": 0.08,
+              "y": 0.337133,
+              "w": 0.274667,
+              "h": 0.265733
+            },
+            {
+              "x": 0.362667,
+              "y": 0.337133,
+              "w": 0.274667,
+              "h": 0.265733
+            },
+            {
+              "x": 0.645333,
+              "y": 0.337133,
+              "w": 0.274667,
+              "h": 0.265733
+            },
+            {
+              "x": 0.08,
+              "y": 0.609267,
+              "w": 0.274667,
+              "h": 0.265733
+            },
+            {
+              "x": 0.362667,
+              "y": 0.609267,
+              "w": 0.274667,
+              "h": 0.265733
+            },
+            {
+              "x": 0.645333,
+              "y": 0.609267,
+              "w": 0.274667,
+              "h": 0.265733
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.9,
+            "w": 0.84,
+            "h": 0.06
+          }
+        },
+        {
+          "id": "museum_6",
+          "photoCount": 6,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.065,
+              "w": 0.416,
+              "h": 0.265733
+            },
+            {
+              "x": 0.504,
+              "y": 0.065,
+              "w": 0.416,
+              "h": 0.265733
+            },
+            {
+              "x": 0.08,
+              "y": 0.337133,
+              "w": 0.416,
+              "h": 0.265733
+            },
+            {
+              "x": 0.504,
+              "y": 0.337133,
+              "w": 0.416,
+              "h": 0.265733
+            },
+            {
+              "x": 0.08,
+              "y": 0.609267,
+              "w": 0.416,
+              "h": 0.265733
+            },
+            {
+              "x": 0.504,
+              "y": 0.609267,
+              "w": 0.416,
+              "h": 0.265733
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.9,
+            "w": 0.84,
+            "h": 0.06
+          }
+        },
+        {
+          "id": "museum_4",
+          "photoCount": 4,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.065,
+              "w": 0.416,
+              "h": 0.4018
+            },
+            {
+              "x": 0.504,
+              "y": 0.065,
+              "w": 0.416,
+              "h": 0.4018
+            },
+            {
+              "x": 0.08,
+              "y": 0.4732,
+              "w": 0.416,
+              "h": 0.4018
+            },
+            {
+              "x": 0.504,
+              "y": 0.4732,
+              "w": 0.416,
+              "h": 0.4018
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.9,
+            "w": 0.84,
+            "h": 0.06
+          }
+        }
+      ],
+      "background": "#ffffff",
+      "sourceIds": [
+        "user_reference",
+        "scrl",
+        "canva"
+      ],
+      "rotationDegrees": 0
+    },
+    {
+      "id": "gallery_book",
+      "name": "Gallery Book",
+      "priority": 1,
+      "initialWeight": 20,
+      "preferPurpose": [
+        "memory",
+        "story",
+        "impact"
+      ],
+      "preferVibe": [
+        "clean",
+        "natural"
+      ],
+      "variants": [
+        {
+          "id": "gallery_center",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.08,
+              "w": 0.84,
+              "h": 0.76
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.9,
+            "w": 0.84,
+            "h": 0.06
+          }
+        },
+        {
+          "id": "gallery_offset",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.08,
+              "w": 0.73,
+              "h": 0.77
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.9,
+            "w": 0.84,
+            "h": 0.06
+          }
+        }
+      ],
+      "background": "#ffffff",
+      "sourceIds": [
+        "unfold",
+        "canva"
+      ]
+    },
+    {
+      "id": "editorial_pair",
+      "name": "Editorial Pair",
+      "priority": 1,
+      "initialWeight": 18,
+      "preferPurpose": [
+        "story",
+        "memory"
+      ],
+      "preferVibe": [
+        "clean",
+        "natural"
+      ],
+      "variants": [
+        {
+          "id": "pair_vertical",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.12,
+              "w": 0.416,
+              "h": 0.7
+            },
+            {
+              "x": 0.504,
+              "y": 0.12,
+              "w": 0.416,
+              "h": 0.7
+            }
+          ]
+        },
+        {
+          "id": "pair_horizontal",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.08,
+              "w": 0.84,
+              "h": 0.3968
+            },
+            {
+              "x": 0.08,
+              "y": 0.4832,
+              "w": 0.84,
+              "h": 0.3968
+            }
+          ]
+        },
+        {
+          "id": "triptych",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.2,
+              "w": 0.274667,
+              "h": 0.55
+            },
+            {
+              "x": 0.362667,
+              "y": 0.2,
+              "w": 0.274667,
+              "h": 0.55
+            },
+            {
+              "x": 0.645333,
+              "y": 0.2,
+              "w": 0.274667,
+              "h": 0.55
+            }
+          ]
+        }
+      ],
+      "background": "#ffffff",
+      "sourceIds": [
+        "scrl",
+        "tezza"
+      ]
+    },
+    {
+      "id": "film_archive",
+      "name": "Film Archive",
+      "priority": 2,
+      "initialWeight": 8,
+      "preferPurpose": [
+        "memory",
+        "story"
+      ],
+      "preferVibe": [
+        "natural",
+        "bold"
+      ],
+      "variants": [
+        {
+          "id": "film_strip_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.17,
+              "y": 0.06,
+              "w": 0.66,
+              "h": 0.276
+            },
+            {
+              "x": 0.17,
+              "y": 0.352,
+              "w": 0.66,
+              "h": 0.276
+            },
+            {
+              "x": 0.17,
+              "y": 0.644,
+              "w": 0.66,
+              "h": 0.276
+            }
+          ]
+        },
+        {
+          "id": "film_contact_6",
+          "photoCount": 6,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.06,
+              "w": 0.43,
+              "h": 0.276
+            },
+            {
+              "x": 0.51,
+              "y": 0.06,
+              "w": 0.43,
+              "h": 0.276
+            },
+            {
+              "x": 0.06,
+              "y": 0.352,
+              "w": 0.43,
+              "h": 0.276
+            },
+            {
+              "x": 0.51,
+              "y": 0.352,
+              "w": 0.43,
+              "h": 0.276
+            },
+            {
+              "x": 0.06,
+              "y": 0.644,
+              "w": 0.43,
+              "h": 0.276
+            },
+            {
+              "x": 0.51,
+              "y": 0.644,
+              "w": 0.43,
+              "h": 0.276
+            }
+          ]
+        }
+      ],
+      "background": "#161616",
+      "textureDefault": "none",
+      "sourceIds": [
+        "unfold",
+        "tezza"
+      ]
+    },
+    {
+      "id": "travel_journal",
+      "name": "Travel Journal",
+      "priority": 2,
+      "initialWeight": 12,
+      "preferPurpose": [
+        "story",
+        "memory"
+      ],
+      "preferVibe": [
+        "natural",
+        "clean"
+      ],
+      "variants": [
+        {
+          "id": "journal_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.065,
+              "w": 0.84,
+              "h": 0.49
+            },
+            {
+              "x": 0.08,
+              "y": 0.57,
+              "w": 0.414,
+              "h": 0.28
+            },
+            {
+              "x": 0.506,
+              "y": 0.57,
+              "w": 0.414,
+              "h": 0.28
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.9,
+            "w": 0.84,
+            "h": 0.06
+          }
+        },
+        {
+          "id": "journal_4",
+          "photoCount": 4,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.065,
+              "w": 0.84,
+              "h": 0.49
+            },
+            {
+              "x": 0.08,
+              "y": 0.57,
+              "w": 0.274667,
+              "h": 0.28
+            },
+            {
+              "x": 0.362667,
+              "y": 0.57,
+              "w": 0.274667,
+              "h": 0.28
+            },
+            {
+              "x": 0.645333,
+              "y": 0.57,
+              "w": 0.274667,
+              "h": 0.28
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.9,
+            "w": 0.84,
+            "h": 0.06
+          }
+        }
+      ],
+      "background": "#faf8f3",
+      "sourceIds": [
+        "canva",
+        "tezza"
+      ]
+    },
+    {
+      "id": "continuous",
+      "name": "Continuous",
+      "priority": 2,
+      "initialWeight": 6,
+      "preferPurpose": [
+        "story",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "bold"
+      ],
+      "variants": [
+        {
+          "id": "continuous_2",
+          "photoCount": 1,
+          "pageSpan": 2,
+          "slots": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1,
+              "h": 1,
+              "pageIndex": 0,
+              "sourceSlice": {
+                "x": 0.0,
+                "y": 0,
+                "w": 0.5,
+                "h": 1
+              }
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1,
+              "h": 1,
+              "pageIndex": 1,
+              "sourceSlice": {
+                "x": 0.5,
+                "y": 0,
+                "w": 0.5,
+                "h": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "continuous_3",
+          "photoCount": 1,
+          "pageSpan": 3,
+          "slots": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1,
+              "h": 1,
+              "pageIndex": 0,
+              "sourceSlice": {
+                "x": 0.0,
+                "y": 0,
+                "w": 0.3333333333333333,
+                "h": 1
+              }
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1,
+              "h": 1,
+              "pageIndex": 1,
+              "sourceSlice": {
+                "x": 0.3333333333333333,
+                "y": 0,
+                "w": 0.3333333333333333,
+                "h": 1
+              }
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "w": 1,
+              "h": 1,
+              "pageIndex": 2,
+              "sourceSlice": {
+                "x": 0.6666666666666666,
+                "y": 0,
+                "w": 0.3333333333333333,
+                "h": 1
+              }
+            }
+          ]
+        }
+      ],
+      "background": "photo",
+      "sourceIds": [
+        "scrl"
+      ],
+      "requirements": [
+        "Wide source image adequate for the combined canvas",
+        "Faces must avoid each individual page seam"
+      ]
+    },
+    {
+      "id": "soft_scrapbook",
+      "name": "Soft Scrapbook",
+      "priority": 3,
+      "initialWeight": 3,
+      "preferPurpose": [
+        "memory"
+      ],
+      "preferVibe": [
+        "bold"
+      ],
+      "variants": [
+        {
+          "id": "scrapbook_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.1,
+              "y": 0.08,
+              "w": 0.64,
+              "h": 0.38,
+              "rotation": -2
+            },
+            {
+              "x": 0.4,
+              "y": 0.38,
+              "w": 0.49,
+              "h": 0.3,
+              "rotation": 2
+            },
+            {
+              "x": 0.1,
+              "y": 0.6,
+              "w": 0.57,
+              "h": 0.31,
+              "rotation": -1
+            }
+          ]
+        },
+        {
+          "id": "scrapbook_4",
+          "photoCount": 4,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.1,
+              "y": 0.08,
+              "w": 0.54,
+              "h": 0.34,
+              "rotation": -2
+            },
+            {
+              "x": 0.48,
+              "y": 0.25,
+              "w": 0.42,
+              "h": 0.29,
+              "rotation": 2
+            },
+            {
+              "x": 0.1,
+              "y": 0.48,
+              "w": 0.46,
+              "h": 0.31,
+              "rotation": -1
+            },
+            {
+              "x": 0.48,
+              "y": 0.65,
+              "w": 0.4,
+              "h": 0.26,
+              "rotation": 2
+            }
+          ]
+        }
+      ],
+      "background": "#faf8f3",
+      "allowOverlap": true,
+      "textureDefault": "none",
+      "sourceIds": [
+        "canva",
+        "tezza"
+      ],
+      "requirements": [
+        "Check rotated bounds",
+        "Reject occluded faces and key subjects"
+      ]
+    },
+    {
+      "id": "color_editorial",
+      "name": "Color Editorial",
+      "priority": 3,
+      "initialWeight": 3,
+      "preferPurpose": [
+        "impact"
+      ],
+      "preferVibe": [
+        "color",
+        "bold"
+      ],
+      "variants": [
+        {
+          "id": "color_hero",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.065,
+              "w": 0.84,
+              "h": 0.81
+            }
+          ]
+        },
+        {
+          "id": "color_pair",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.12,
+              "w": 0.416,
+              "h": 0.7
+            },
+            {
+              "x": 0.504,
+              "y": 0.12,
+              "w": 0.416,
+              "h": 0.7
+            }
+          ]
+        }
+      ],
+      "background": "single_photo_derived_accent",
+      "sourceIds": [
+        "tezza",
+        "canva"
+      ]
+    }
+  ]
+}

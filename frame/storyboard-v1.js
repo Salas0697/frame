@@ -1,60 +1,74 @@
-(()=>{
-const CW=340,CH=425,AREA=CW*CH;
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),pick=a=>a[Math.floor(Math.random()*a.length)];
-const shuffle=a=>{const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
-const scorePhoto=p=>Number(p?.score||0),imgLayers=sl=>(sl.layers||[]).filter(l=>l.type==='img'&&!l.hidden);
-function template(){return S.slides?.flatMap(s=>s.layers||[]).find(l=>l.type==='img')||null}
-function brief(){return S.frameBrief||{purpose:'surprise',vibe:'surprise',density:'balanced'}}
-function ppal(p){try{return palFromPhoto(p)}catch(e){return [[24,24,26],[240,238,232],[128,128,132],[195,92,70]]}}
-function rgb(c){return Array.isArray(c)?`rgb(${Math.round(c[0])},${Math.round(c[1])},${Math.round(c[2])})`:c}
-function mix(a,b,t){return [0,1,2].map(i=>Math.round((a?.[i]??0)*(1-t)+(b?.[i]??0)*t))}
-function lum(c){return Array.isArray(c)?c[0]*.299+c[1]*.587+c[2]*.114:128}
-function sat(c){return Array.isArray(c)?Math.max(...c)-Math.min(...c):0}
-function faceUnion(p){if(p?.faceUnion)return p.faceUnion;const f=Array.isArray(p?.faces)?p.faces:[];if(!f.length)return null;const x1=Math.min(...f.map(x=>x.x)),y1=Math.min(...f.map(x=>x.y)),x2=Math.max(...f.map(x=>x.x+x.w)),y2=Math.max(...f.map(x=>x.y+x.h));return{x:x1,y:y1,w:x2-x1,h:y2-y1,cx:(x1+x2)/2,cy:(y1+y2)/2}}
-function photoMeta(p){const aspect=Number(p?.aspect||p?.ratio||(p?.width&&p?.height?p.width/p.height:1))||1,g=Array.isArray(p?.grid)?p.grid.map(Number):null;let quiet='bottom',activity=.5;if(g?.length>=9){const z={top:(g[0]+g[1]+g[2])/3,bottom:(g[6]+g[7]+g[8])/3,left:(g[0]+g[3]+g[6])/3,right:(g[2]+g[5]+g[8])/3};quiet=Object.entries(z).sort((a,b)=>a[1]-b[1])[0][0];activity=g.reduce((a,b)=>a+b,0)/g.length}const faces=Array.isArray(p?.faces)?p.faces:[],u=faceUnion(p),faceCount=Number.isFinite(p?.faceCount)?p.faceCount:faces.length;return{aspect,portrait:aspect<.82,landscape:aspect>1.18,square:aspect>=.82&&aspect<=1.18,quiet,activity,score:scorePhoto(p),variance:Number(p?.variance||0),avg:p?.avg||[128,128,128],faces,faceCount,faceUnion:u}}
-function setPalette(photos){const cols=[];photos.forEach(p=>ppal(p).slice(0,4).forEach(c=>Array.isArray(c)&&cols.push(c)));if(!cols.length)return{canvas:[242,239,232],surface:[20,20,22],ink:[18,18,20],accent:[176,92,70],accentSoft:[222,196,184],bridge:[210,205,198],dark:[13,13,15],light:[244,241,235]};const light=[...cols].sort((a,b)=>lum(b)-lum(a))[0],dark=[...cols].sort((a,b)=>lum(a)-lum(b))[0],useful=cols.filter(c=>lum(c)>42&&lum(c)<220),accent=[...(useful.length?useful:cols)].sort((a,b)=>sat(b)-sat(a))[0];const avg=cols.reduce((r,c)=>r.map((v,i)=>v+c[i]),[0,0,0]).map(v=>v/cols.length),canvas=lum(avg)>125?mix(avg,[248,246,240],.82):mix(avg,[244,241,234],.91),bridge=mix(avg,canvas,.62);return{canvas,surface:mix(dark,[18,18,20],.68),ink:lum(canvas)>145?[18,18,20]:[245,243,238],accent:mix(accent,lum(accent)>150?[115,105,100]:[235,225,215],.18),accentSoft:mix(accent,canvas,.78),bridge,dark:mix(dark,[9,9,11],.62),light:mix(light,[247,244,238],.8)}}
-const DIRECTIONS={
- gallery:{name:'gallery',density:.34,spread:.62,three:.05,bg:'neutral',layouts:['gallery','full','offset','duo','wideBand'],heroBias:.88},
- seamless:{name:'seamless',density:.38,spread:.94,three:.24,bg:'neutral',layouts:['full','wideBand','split','gallery'],heroBias:.94},
- fashion:{name:'fashion',density:.47,spread:.6,three:.09,bg:'contrast',layouts:['edge','full','gallery','split','colorFrame'],heroBias:.93},
- chromatic:{name:'chromatic',density:.58,spread:.48,three:.1,bg:'color',layouts:['colorFrame','split','mosaic','duo','full'],heroBias:.78},
- documentary:{name:'documentary',density:.3,spread:.76,three:.12,bg:'dark',layouts:['full','split','wideBand','gallery'],heroBias:.97},
- journal:{name:'journal',density:.55,spread:.37,three:.03,bg:'light',layouts:['gallery','offset','duo','stack','contact'],heroBias:.72},
- bold:{name:'bold',density:.65,spread:.54,three:.12,bg:'contrast',layouts:['edge','split','mosaic','full','colorFrame'],heroBias:.87},
- collage:{name:'collage',density:.76,spread:.23,three:.01,bg:'light',layouts:['mosaic','contact','duo','stack','split'],heroBias:.58}
-};
-const PURPOSE={story:{seamless:5,documentary:4,gallery:3,journal:2},impact:{fashion:5,bold:5,chromatic:3,documentary:2},memory:{journal:5,gallery:4,documentary:3,seamless:2},showcase:{collage:5,journal:4,chromatic:3,gallery:2}};
-const VIBE={clean:{gallery:6,fashion:3,journal:2},natural:{documentary:6,gallery:3,seamless:3,journal:2},color:{chromatic:7,bold:4,collage:2},bold:{bold:7,fashion:6,chromatic:3,documentary:2}};
-function weightedPick(weights){const rows=Object.entries(weights).filter(([,w])=>w>0),sum=rows.reduce((a,[,w])=>a+w,0);let r=Math.random()*sum;for(const [k,w] of rows){r-=w;if(r<=0)return k}return rows[0]?.[0]||'gallery'}
-function chooseDirection(){const b=brief(),weights={};Object.keys(DIRECTIONS).forEach(k=>weights[k]=1);if(PURPOSE[b.purpose])for(const [k,w] of Object.entries(PURPOSE[b.purpose]))weights[k]+=w;if(VIBE[b.vibe])for(const [k,w] of Object.entries(VIBE[b.vibe]))weights[k]+=w;if(S.frameArtDirection)weights[S.frameArtDirection]*=.12;const key=weightedPick(weights),d={...DIRECTIONS[key],layouts:[...DIRECTIONS[key].layouts]};if(b.density==='airy'){d.density=clamp(d.density-.16,.2,.9);d.spread=clamp(d.spread+.1,0,1);d.layouts=[...new Set(['gallery','full','wideBand','offset',...d.layouts])]}else if(b.density==='rich'){d.density=clamp(d.density+.17,.2,.92);d.spread=clamp(d.spread-.08,0,1);d.layouts=[...new Set(['mosaic','contact','duo','stack','split',...d.layouts])]}if(b.purpose==='story'){d.spread=clamp(d.spread+.12,0,1);d.heroBias=Math.max(d.heroBias,.9)}if(b.purpose==='impact'){d.heroBias=.98;d.layouts=[...new Set(['full','edge','colorFrame',...d.layouts])]};if(b.purpose==='showcase')d.density=clamp(d.density+.12,.25,.95);return d}
-function bgFor(dir,pal,p,v=0){const b=brief();if(b.vibe==='clean'&&dir.name!=='documentary')return v%3===0?rgb(pal.light):rgb(pal.canvas);if(b.vibe==='natural'&&dir.name!=='documentary')return lum(photoMeta(p).avg)<95?rgb(pal.dark):rgb(pal.canvas);if(dir.bg==='dark')return rgb(pal.dark);if(dir.bg==='light')return rgb(pal.light);if(dir.bg==='color'){const highSat=sat(photoMeta(p).avg)>80;return highSat?rgb(pal.canvas):(v%2?rgb(pal.accentSoft):rgb(pal.bridge))}if(dir.bg==='contrast')return v%2?rgb(pal.dark):rgb(pal.light);return lum(photoMeta(p).avg)<105?rgb(pal.dark):rgb(pal.canvas)}
-function focusProps(p){const m=photoMeta(p),u=m.faceUnion;if(!u)return{offX:0,offY:0};const cx=Number.isFinite(u.cx)?u.cx:u.x+u.w/2,cy=Number.isFinite(u.cy)?u.cy:u.y+u.h/2,str=m.faceCount>=3?48:64;return{offX:clamp((cx-.5)*str,-26,26),offY:clamp((cy-.5)*str,-22,22)}}
-function cloneImg(t,p,o={}){const l=clone(t);Object.assign(l,{id:uid(),type:'img',photo:p,hidden:false,locked:false,userTouched:true,storyAuto:true,rot:0,zoom:1,offX:0,offY:0,z:10},o);if(o.w&&o.h){const f=focusProps(p);l.offX=f.offX;l.offY=f.offY}return l}
-function faceFit(p,w,h){const m=photoMeta(p),u=m.faceUnion;if(!u||!m.faceCount)return 1;const fa=w/h,sa=m.aspect;let visW=1,visH=1;if(sa>fa)visW=clamp(fa/sa,.05,1);else visH=clamp(sa/fa,.05,1);const rw=u.w/Math.max(.01,visW*.88),rh=u.h/Math.max(.01,visH*.88),need=Math.max(rw,rh);return clamp(1-Math.max(0,need-1)*1.8,0,1)}
-function slotScore(p,w,h,role='normal'){const m=photoMeta(p),fa=w/h,area=w*h/AREA;let s=scorePhoto(p)*7;const aspectMatch=Math.exp(-Math.abs(Math.log(Math.max(.08,m.aspect)/Math.max(.08,fa))));s+=aspectMatch*20;const ff=faceFit(p,w,h);if(m.faceCount)s+=ff*48-(1-ff)*85;if(m.faceCount>=3&&area<.44)s-=78;if(m.faceCount===2&&area<.27)s-=38;if(m.activity>.72&&area<.2)s-=18;if(role==='wide'){s+=m.landscape?26:m.portrait?-32:5;if(m.faceCount>=3)s+=7}if(role==='portrait'){s+=m.portrait?25:m.landscape?-25:4;if(m.faceCount===1)s+=13;if(m.faceCount>=3)s-=45}if(role==='small'){if(m.faceCount>=2)s-=58;else if(!m.faceCount)s+=11;if(m.activity<.42)s+=6}if(role==='hero'){s+=scorePhoto(p)*14;if(m.faceCount>=2)s+=5}if(role==='spread'){s+=m.landscape?42:m.portrait?-130:-10;if(m.aspect>1.45)s+=20;if(ff<.8)s-=75}return s}
-const HINTS={full:[{w:340,h:425,r:'hero'}],gallery:[{w:300,h:360,r:'hero'}],offset:[{w:254,h:389,r:'portrait'}],colorFrame:[{w:284,h:360,r:'hero'}],edge:[{w:274,h:425,r:'portrait'}],wideBand:[{w:340,h:269,r:'wide'}],split:[{w:214,h:425,r:'hero'},{w:116,h:313,r:'small'}],duo:[{w:304,h:238,r:'hero'},{w:146,h:137,r:'small'}],stack:[{w:304,h:185,r:'wide'},{w:304,h:185,r:'wide'}],mosaic:[{w:218,h:425,r:'hero'},{w:112,h:207,r:'small'},{w:112,h:208,r:'small'}],contact:[{w:151,h:190,r:'small'},{w:151,h:190,r:'small'},{w:151,h:190,r:'small'},{w:151,h:190,r:'small'}]};
-function layoutTake(k){return HINTS[k]?.length||1}
-function assignFor(kind,pool){const hints=HINTS[kind]||HINTS.full;if(pool.length<hints.length)return null;const left=[...pool],set=[],scores=[];for(const h of hints){const ranked=left.map(p=>({p,s:slotScore(p,h.w,h.h,h.r)+Math.random()*1.8})).sort((a,b)=>b.s-a.s),best=ranked[0];if(!best)return null;set.push(best.p);scores.push(best.s);left.splice(left.indexOf(best.p),1)}return{set,fit:scores.reduce((a,b)=>a+b,0)/scores.length}}
-function full(sl,t,p,c){sl.bg=bgFor(c.dir,c.pal,p,c.i);sl.layers.push(cloneImg(t,p,{x:0,y:0,w:CW,h:CH}))}
-function gallery(sl,t,p,c){sl.bg=bgFor(c.dir,c.pal,p,c.i);const m=photoMeta(p),px=c.dir.name==='gallery'?26:20,py=m.landscape?58:22;sl.layers.push(cloneImg(t,p,{x:px,y:py,w:CW-px*2,h:m.landscape?304:CH-py*2}))}
-function offset(sl,t,p,c){sl.bg=bgFor(c.dir,c.pal,p,c.i+1);const m=photoMeta(p);if(m.portrait)sl.layers.push(cloneImg(t,p,{x:c.i%2?68:18,y:18,w:254,h:389}));else sl.layers.push(cloneImg(t,p,{x:18,y:c.i%2?88:36,w:304,h:296}))}
-function split(sl,t,a,b,c){sl.bg=bgFor(c.dir,c.pal,a,c.i);const A=photoMeta(a),B=photoMeta(b);if(A.portrait&&B.portrait&&A.faceCount<3&&B.faceCount<3){sl.layers.push(cloneImg(t,a,{x:14,y:18,w:151,h:389}));sl.layers.push(cloneImg(t,b,{x:175,y:18,w:151,h:389,z:11}))}else if(c.i%2===0){sl.layers.push(cloneImg(t,a,{x:0,y:0,w:214,h:CH}));sl.layers.push(cloneImg(t,b,{x:224,y:56,w:116,h:313,z:11}))}else{sl.layers.push(cloneImg(t,a,{x:18,y:18,w:304,h:250}));sl.layers.push(cloneImg(t,b,{x:86,y:280,w:236,h:127,z:11}))}}
-function duo(sl,t,a,b,c){sl.bg=bgFor(c.dir,c.pal,a,c.i+1);if(c.i%2){sl.layers.push(cloneImg(t,a,{x:18,y:18,w:304,h:238}));sl.layers.push(cloneImg(t,b,{x:176,y:270,w:146,h:137,z:11}))}else{sl.layers.push(cloneImg(t,a,{x:0,y:0,w:CW,h:256}));sl.layers.push(cloneImg(t,b,{x:20,y:276,w:300,h:131,z:11}))}}
-function mosaic(sl,t,a,b,d,c){sl.bg=bgFor(c.dir,c.pal,a,c.i);if(c.i%2){sl.layers.push(cloneImg(t,a,{x:18,y:18,w:304,h:235}));sl.layers.push(cloneImg(t,b,{x:18,y:266,w:145,h:141,z:11}));sl.layers.push(cloneImg(t,d,{x:177,y:266,w:145,h:141,z:12}))}else{sl.layers.push(cloneImg(t,a,{x:0,y:0,w:218,h:CH}));sl.layers.push(cloneImg(t,b,{x:228,y:0,w:112,h:207,z:11}));sl.layers.push(cloneImg(t,d,{x:228,y:217,w:112,h:208,z:12}))}}
-function colorFrame(sl,t,p,c){const vivid=sat(photoMeta(p).avg)>82;sl.bg=rgb(vivid?c.pal.canvas:(c.i%2?c.pal.accentSoft:c.pal.accent));const m=photoMeta(p),pad=m.portrait?28:18;sl.layers.push(cloneImg(t,p,{x:pad,y:m.portrait?24:56,w:CW-pad*2,h:m.portrait?377:313}))}
-function edge(sl,t,p,c){sl.bg=rgb(c.i%2?c.pal.dark:c.pal.light);sl.layers.push(cloneImg(t,p,{x:c.i%2?66:0,y:0,w:274,h:CH}))}
-function wideBand(sl,t,p,c){sl.bg=bgFor(c.dir,c.pal,p,c.i);sl.layers.push(cloneImg(t,p,{x:0,y:78,w:CW,h:269}))}
-function stack(sl,t,a,b,c){sl.bg=bgFor(c.dir,c.pal,a,c.i);sl.layers.push(cloneImg(t,a,{x:18,y:18,w:304,h:185}));sl.layers.push(cloneImg(t,b,{x:18,y:222,w:304,h:185,z:11}))}
-function contact(sl,t,set,c){sl.bg=bgFor(c.dir,c.pal,set[0],c.i);const gap=8,w=(CW-36-gap)/2,h=(CH-36-gap)/2;set.slice(0,4).forEach((p,k)=>sl.layers.push(cloneImg(t,p,{x:14+(k%2)*(w+gap),y:14+Math.floor(k/2)*(h+gap),w,h,z:10+k})))}
-function applyLayout(k,sl,t,set,c){if(k==='full')full(sl,t,set[0],c);else if(k==='gallery')gallery(sl,t,set[0],c);else if(k==='offset')offset(sl,t,set[0],c);else if(k==='split')split(sl,t,set[0],set[1],c);else if(k==='duo')duo(sl,t,set[0],set[1],c);else if(k==='mosaic')mosaic(sl,t,set[0],set[1],set[2],c);else if(k==='colorFrame')colorFrame(sl,t,set[0],c);else if(k==='edge')edge(sl,t,set[0],c);else if(k==='wideBand')wideBand(sl,t,set[0],c);else if(k==='stack')stack(sl,t,set[0],set[1],c);else contact(sl,t,set,c)}
-function spread(slides,start,span,t,p,c){for(let i=0;i<span;i++){const sl=slides[start+i];sl.bg=c.dir.bg==='light'?rgb(c.pal.light):rgb(c.pal.dark);sl.storySpan={photoId:p.id,start,span,seg:i};sl.frameLayout='spread';sl.layers.push(cloneImg(t,p,{x:-CW*i,y:0,w:CW*span,h:CH,storySpan:true,storySeg:i,storySpanCount:span}))}}
-function desiredSlides(n,dir,span){if(n<=3)return n;const target=1.12+dir.density*1.35;return clamp(Math.ceil((n+(span-1))/target),4,10)}
-function bestSpread(photos){return [...photos].map(p=>({p,s:slotScore(p,CW*2,CH,'spread')})).sort((a,b)=>b.s-a.s)[0]||null}
-function makeCandidate(photos,t,dir,palette){let span=1,hero=null;const sp=bestSpread(photos);if(sp&&sp.s>8&&photos.length>=6&&Math.random()<dir.spread){hero=sp.p;span=2;if(photos.length>=9&&photoMeta(hero).aspect>1.5&&faceFit(hero,CW*3,CH)>.8&&Math.random()<dir.three)span=3}const count=desiredSlides(photos.length,dir,span),slides=Array.from({length:count},()=>({id:uid(),layers:[],bg:'#0b0b0d',palette:null,frameAuto:true})),occupied=new Set();if(span>1){const start=Math.min(Math.floor(Math.random()*Math.min(3,count-span+1)),count-span);spread(slides,start,span,t,hero,{dir,pal:palette,i:start});for(let i=0;i<span;i++)occupied.add(start+i)}let pool=shuffle(span>1?photos.filter(p=>p.id!==hero.id):photos),prevKind='';const usable=[...Array(count).keys()].filter(i=>!occupied.has(i));for(let ui=0;ui<usable.length;ui++){const si=usable[ui],sl=slides[si],slotsLeft=usable.length-ui;if(!pool.length)break;const desired=clamp(Math.ceil(pool.length/slotsLeft),1,4),kinds=[...new Set([...dir.layouts,desired>=4?'contact':null,desired>=3?'mosaic':null,desired>=2?'split':null,'full'].filter(Boolean))],ranked=[];for(const k of kinds){const take=layoutTake(k);if(take>pool.length)continue;const a=assignFor(k,pool);if(!a)continue;let sc=a.fit-Math.abs(take-desired)*18+(k===prevKind?-18:0)+Math.random()*2.4;if(take>=3&&dir.density<.45)sc-=15;if(take===1&&dir.density>.7&&pool.length>slotsLeft)sc-=12;ranked.push({k,a,sc})}ranked.sort((a,b)=>b.sc-a.sc);const choice=pick(ranked.slice(0,Math.min(2,ranked.length)))||{k:'full',a:assignFor('full',pool)},set=choice.a.set;pool=pool.filter(p=>!set.includes(p));sl.palette=ppal(set[0]);sl.frameLayout=choice.k;applyLayout(choice.k,sl,t,set,{dir,pal:palette,i:si});prevKind=choice.k}while(pool.length&&slides.length<10){const sl={id:uid(),layers:[],bg:'#0b0b0d',palette:null,frameAuto:true},k=pool.length>=2?'split':'gallery',a=assignFor(k,pool)||assignFor('full',pool),set=a.set;pool=pool.filter(p=>!set.includes(p));sl.frameLayout=k;sl.palette=ppal(set[0]);applyLayout(k,sl,t,set,{dir,pal:palette,i:slides.length});slides.push(sl)}slides.forEach(sl=>sl.layers=sl.layers.filter(l=>l.type==='img'||(l.type==='text'&&l.userTouched)));return{slides,hero,span,dir:dir.name,palette}}
-function candidateScore(c,photos,prev){const b=brief();let s=125;const layouts=c.slides.map(sl=>sl.frameLayout||'full');s+=new Set(layouts).size*5;for(let i=1;i<layouts.length;i++)if(layouts[i]===layouts[i-1])s-=14;const used=new Set(c.slides.flatMap(imgLayers).map(l=>l.photo?.id).filter(Boolean));s-=Math.max(0,photos.length-used.size)*120;const dense=c.slides.filter(sl=>imgLayers(sl).length>=3).length;if(dense>Math.ceil(c.slides.length*.4))s-=22;for(const sl of c.slides){if(!imgLayers(sl).length){s-=120;continue}for(const l of imgLayers(sl)){const m=photoMeta(l.photo),ff=faceFit(l.photo,l.w,l.h),area=l.w*l.h/AREA;if(m.faceCount){s+=(ff-.72)*42;if(ff<.75)s-=70;if(m.faceCount>=3&&area<.42)s-=80;if(m.faceCount===2&&area<.2)s-=35}if(area<.08)s-=16}}if(c.span>1)s+=b.purpose==='story'?22:10;if(b.purpose==='impact'){const first=imgLayers(c.slides[0])[0];if(first&&first.w*first.h/AREA>.72)s+=18}if(b.purpose==='showcase')s+=dense*6;if(b.density==='airy'&&dense)s-=dense*12;if(b.density==='rich')s+=c.slides.filter(sl=>imgLayers(sl).length>=2).length*4;if(b.vibe==='clean'){const colorful=c.slides.filter(sl=>sl.bg===rgb(c.palette.accent)||sl.bg===rgb(c.palette.accentSoft)).length;s-=colorful*8}if(b.vibe==='color'){const colorful=c.slides.filter(sl=>sl.bg===rgb(c.palette.accent)||sl.bg===rgb(c.palette.accentSoft)||sl.bg===rgb(c.palette.bridge)).length;s+=Math.min(colorful,Math.ceil(c.slides.length*.35))*5}if(prev){if(prev.dir===c.dir)s-=48;if((prev.layouts||[]).join('|')===layouts.join('|'))s-=70;if(prev.heroId&&prev.heroId===c.hero?.id)s-=10}return s+Math.random()*3}
-function buildStory(){if(!S.photos?.length)return;const t=template();if(!t)return;const photos=[...S.photos],palette=setPalette(photos),dir=chooseDirection(),prev=S.frameLastDesign||null,candidates=[];for(let i=0;i<16;i++){const c=makeCandidate(photos,t,dir,palette);c.score=candidateScore(c,photos,prev);candidates.push(c)}candidates.sort((a,b)=>b.score-a.score);const chosen=pick(candidates.slice(0,Math.min(2,candidates.length)));S.slides=chosen.slides;S.framePalette=chosen.palette;S.frameArtDirection=chosen.dir;S.frameLastDesign={dir:chosen.dir,heroId:chosen.hero?.id||null,layouts:chosen.slides.map(sl=>sl.frameLayout||'full')};S.currentSlide=Math.min(S.currentSlide||0,S.slides.length-1);S.selected=null;S.selectedType=null;saveProject()}
-window.FRAME_rebuildStory=()=>{try{if(typeof pushHistory==='function')pushHistory()}catch(e){}buildStory();renderAll();saveProject();toast('Nueva dirección ✦')};
-const prevBuild=buildSlides;buildSlides=function(){prevBuild();buildStory()};
-const style=document.createElement('style');style.textContent='#storyBadge,.storyBadge,.coverageBadge{display:none!important}';document.head.appendChild(style);
-if(S.photos?.length){buildStory();renderAll()}
+/* Application adapter for the catalog engine; no legacy generation or file listeners. */
+(() => {
+  const catalog = window.FRAME_TEMPLATE_CATALOG;
+  const engine = window.FrameTemplateEngine;
+  let generation = 0;
+  function buildStory() {
+    if (!S.photos?.length) return;
+    const seed = (Date.now() + (++generation) * 7919 + Math.floor(Math.random()*1e6)) >>> 0;
+    const result = engine.generate({catalog, photos:S.photos, brief:S.frameBrief,
+      familyId:S.frameTemplateFamily, previous:S.frameLastDesign, seed, caption:S.frameCaption});
+    result.slides.forEach(sl => {
+      const photo = sl.layers.find(l=>l.type==='img')?.photo;
+      sl.palette = palFromPhoto(photo);
+    });
+    S.slides = result.slides;
+    S.frameArtDirection = result.familyId;
+    S.frameLastDesign = {dir:result.familyId,signature:result.signature,layouts:result.slides.map(sl=>sl.frameLayout)};
+    S.currentSlide = 0; S.selected = null; S.selectedType = null;
+  }
+  window.FRAME_generateStory = buildStory;
+  window.FRAME_rebuildStory = () => {
+    if (!S.photos?.length || window.framePhotoImport?.phase === 'brief') return;
+    pushHistory(); buildStory(); renderAll(); saveProject();
+    toast('Otra composición lista ✦');
+  };
+
+  const bar = document.createElement('div');
+  bar.className = 'templateBar';
+  const label = document.createElement('label'); label.htmlFor='templateFamily'; label.textContent='Estilo';
+  const select = document.createElement('select'); select.id='templateFamily';
+  select.append(new Option('Automático · según tu brief',''));
+  catalog.families.forEach(f=>select.append(new Option(f.name,f.id)));
+  const notes = document.createElement('details'); notes.className='templateNotes';
+  const summary = document.createElement('summary'); summary.textContent='Nota al pie';
+  const input = document.createElement('input'); input.id='templateCaption'; input.maxLength=120;
+  input.placeholder='Una nota breve para este álbum'; input.setAttribute('aria-label','Nota al pie del álbum');
+  notes.append(summary,input); bar.append(label,select,notes);
+  document.querySelector('.quickbar')?.after(bar);
+  const supportsCaption = id => catalog.families.find(f=>f.id===id)?.variants.some(v=>v.captionRegion);
+  function sync() {
+    select.value=S.frameTemplateFamily||'';
+    if (document.activeElement!==input) input.value=S.frameCaption||'';
+    notes.hidden=!supportsCaption(S.frameTemplateFamily||S.frameArtDirection);
+    const family=catalog.families.find(f=>f.id===S.frameArtDirection);
+    if (family && S.slides.length) $('#modeLabel').textContent=family.name;
+  }
+  select.onchange=()=>{
+    if (select.disabled || !S.photos.length) return;
+    pushHistory(); S.frameTemplateFamily=select.value; buildStory();renderAll();saveProject();
+  };
+  input.onchange=()=>{
+    if (input.disabled || !S.photos.length) return;
+    pushHistory(); S.frameCaption=input.value.trim();
+    // Reuse the last design seed is unnecessary: changing a note must preserve geometry.
+    S.slides.forEach(sl=>sl.layers=sl.layers.filter(l=>!l.frameCaption));
+    const sl=S.slides.find(sl=>sl.frameCaptionRegion);
+    if (sl && S.frameCaption) {
+      const r=sl.frameCaptionRegion;
+      const lines=window.FrameTemplateEngine.captionLines(S.frameCaption);
+      const l=makeText(lines,r.x*340,r.y*425,r.w*340,6.5,'#222222','mono',400,0);
+      l.frameCaption=true;l.userTouched=true;sl.layers.push(l);
+    }
+    renderAll();saveProject();
+  };
+  document.addEventListener('frame:import-phase',event=>{
+    select.disabled=input.disabled=event.detail.phase!=='idle';
+  });
+  const render = renderAll;
+  renderAll = function() { render(); sync(); };
+  sync();
+  const css=document.createElement('style');
+  css.textContent=`.templateBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 16px 12px}.templateBar label{font-size:11px;color:#999}.templateBar select{flex:1;min-width:0;max-width:100%;min-height:40px;color:#eee;background:#151518;border:1px solid #303036;border-radius:12px;padding:0 10px;font:inherit;font-size:12px}.templateBar select:disabled{opacity:.45}.templateNotes{width:100%;font-size:11px;color:#aaa}.templateNotes summary{cursor:pointer;padding:4px 0}.templateNotes input{box-sizing:border-box;width:100%;min-height:40px;margin-top:5px;border:1px solid #303036;border-radius:10px;padding:8px 10px;background:#151518;color:#eee;font-size:16px}.emptyStateFast .templateBar{display:none}.slide[data-family] .textLayer{letter-spacing:normal;text-shadow:none}#storyBadge,.storyBadge,.coverageBadge{display:none!important}`;
+  document.head.appendChild(css);
 })();
