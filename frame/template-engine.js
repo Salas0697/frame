@@ -78,7 +78,18 @@
     if (family.background !== 'single_photo_derived_accent' && family.background !== 'photo') return family.background;
     if (family.background === 'photo') return '#ffffff';
     const c = photos.map(p => p.avg || [128,128,128]).sort((a,b) => (Math.max(...b)-Math.min(...b))-(Math.max(...a)-Math.min(...a)))[0];
-    return `rgb(${c.map(v => Math.round(v*.68+245*.32)).join(',')})`;
+    return `rgb(${c.map(v => Math.round(v*.92)).join(',')})`;
+  }
+  function heroScore(p){
+    const brightness=Number(p.brightness??128),exposure=1-Math.min(1,Math.abs(brightness-128)/128);
+    const sharp=Math.log1p(Math.max(0,Number(p.sharpness??p.variance??0)));
+    const resolution=Math.min(1,Math.min(p.width||p.w||1000,p.height||p.h||1000)/1400);
+    const fit=crop(p,W*.84,H*.8);
+    return (fit.safe?12:-30)+fit.retained*10+exposure*8+Math.min(sharp,10)*1.5+resolution*4+(faces(p).length===1?3:0);
+  }
+  function captionInk(bg){
+    let c=bg.startsWith('#')?bg.slice(1).match(/../g).map(v=>parseInt(v,16)):(bg.match(/\d+/g)||[255,255,255]).map(Number);
+    return c[0]*.2126+c[1]*.7152+c[2]*.0722<135?'#f7f7f5':'#222222';
   }
   function signature(slides) {
     return slides.map(sl => `${sl.frameLayout}:${sl.layers.filter(l=>l.type==='img').map(l=>l.photo.id).join(',')}`).join('|');
@@ -88,7 +99,7 @@
     words.forEach(word=>{const last=lines.length-1;if((lines[last]+' '+word).trim().length>40 && lines[last])lines.push(word);else lines[last]=(lines[last]+' '+word).trim()});
     return lines.join('\n');
   }
-  function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = ''}) {
+  function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = '', heroPhotoId, backgroundMode = 'auto', frameTreatment = 'gallery'}) {
     if (!photos.length) return {slides: [], familyId: null, signature: ''};
     const random = seeded(seed), families = catalog.families;
     const weights = families.map(f => {
@@ -105,7 +116,7 @@
     const family = families.find(f=>f.id===familyId) || weighted(weights, random).f;
     const gallery = families.find(f=>f.id==='gallery_book').variants;
     const pairs = families.find(f=>f.id==='editorial_pair').variants;
-    const bg = background(family, photos);
+    const bg = backgroundMode === 'white' ? '#ffffff' : backgroundMode === 'black' ? '#101012' : backgroundMode === 'color' ? background({background:'single_photo_derived_accent'},photos) : background(family, photos);
     const candidates = [];
     for (let attempt = 0; attempt < 12; attempt++) {
       let serial = 0, pool = [...photos], slides = [], totalFit = 0, fitCount = 0;
@@ -117,9 +128,20 @@
         const sl = page(v.id);
         assigned.assigned.forEach((a, i) => sl.layers.push(layer(a.p,a.slot,a.c,i)));
         if (v.captionRegion) sl.frameCaptionRegion = {...v.captionRegion};
-        if (front) slides.unshift(sl); else slides.push(sl);
+        if (front) slides.splice(slides[0]?.frameHero ? 1 : 0,0,sl); else slides.push(sl);
         const used = new Set(assigned.assigned.map(a=>a.p.id));
         pool = pool.filter(p=>!used.has(p.id)); totalFit += assigned.fit; fitCount++;
+      }
+      const wantedHero=pool.find(p=>p.id===heroPhotoId);
+      if(wantedHero || (pool.length>=4 && ['story','impact'].includes(brief.purpose))){
+        const hero=wantedHero||[...pool].sort((a,b)=>heroScore(b)-heroScore(a))[0];
+        const box=brief.purpose==='impact'?{x:.025,y:.025,w:.95,h:.95}:{x:.08,y:.06,w:.84,h:.80};
+        const fit=crop(hero,box.w*W,box.h*H);
+        const slot=fit.safe && fit.retained>.82 ? box : fittedSlot(box,hero);
+        const c=crop(hero,slot.w*W,slot.h*H),sl=page('editorial_hero');
+        sl.layers.push(layer(hero,slot,c));sl.frameHero=true;
+        if(box.h<.9)sl.frameCaptionRegion={x:.08,y:.9,w:.84,h:.06};
+        slides.push(sl);pool=pool.filter(p=>p.id!==hero.id);totalFit+=c.retained;fitCount++;
       }
       // Dense, orderly grids are intentional layouts, never nine "too small" penalties.
       if (family.id === 'museum_notes') {
@@ -178,6 +200,15 @@
         // Four short lines fit the reserved footer in both preview and export.
         captionSlide.layers.push({id:uid(),type:'text',text:captionLines(note),x:r.x*W,y:r.y*H,w:r.w*W,size:6.5,color:'#222222',font:'mono',weight:400,rot:0,z:40,hidden:false,locked:false,userTouched:true,frameCaption:true});
       }
+      for(const sl of slides){
+        if(sl.storySpan)continue;
+        if(frameTreatment==='mat'){
+          sl.layers.forEach(l=>{l.x=W*.045+l.x*.91;l.y=H*.045+l.y*.91;if(l.type==='img'){l.w*=.91;l.h*=.91}else if(l.type==='text'){l.w*=.91;l.size*=.91}});
+          if(sl.frameCaptionRegion){const r=sl.frameCaptionRegion;sl.frameCaptionRegion={x:.045+r.x*.91,y:.045+r.y*.91,w:r.w*.91,h:r.h*.91}}
+        }
+        if(frameTreatment==='fine')sl.layers.filter(l=>l.type==='img').forEach(l=>{l.frameBorder=.55;l.frameBorderColor=bg==='#101012'||bg==='#161616'?'#eeeeee':'#202020'});
+        sl.layers.filter(l=>l.frameCaption).forEach(l=>{l.color=captionInk(bg)});
+      }
       const sig=signature(slides);
       let score=totalFit/Math.max(fitCount,1)*12 + random()*4;
       if (previous?.signature===sig) score-=100;
@@ -187,5 +218,5 @@
     candidates.sort((a,b)=>b.score-a.score);
     return candidates[0];
   }
-  return {generate, crop, canSpread, signature, captionLines};
+  return {generate, crop, canSpread, signature, captionLines, heroScore, captionInk};
 });
