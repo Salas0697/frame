@@ -55,6 +55,9 @@ test('finishes, fixed page, crop transaction, cover, full miniatures and PNG exp
  await page.locator('#fastNewDesign').click();
  expect(await grid.locator('.imgLayer').evaluateAll(els=>els.map(e=>[e.alt,e.getAttribute('style')]))).toEqual(frozen);
  expect(await page.locator('#filmstrip .miniPhoto').count()).toBe(12);
+ await grid.locator('.imgLayer').first().click();await page.locator('#uxEdit').click();
+ await expect(page.locator('#peHero')).toBeDisabled();await expect(page.locator('#peHero')).toHaveText('Libera esta página para usarla como portada');
+ await page.locator('#peCancel').click();
  // Crop a photo from the first, unlocked page.
  const photo=page.locator('#stage .slide').first().locator('.imgLayer').first();
  await photo.click();await page.locator('#uxEdit').click();
