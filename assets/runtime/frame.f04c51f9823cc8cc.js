@@ -900,7 +900,7 @@ document.addEventListener('click',e=>{if(!e.target.closest?.('.imgLayer,.textLay
           const target=brief.density==='airy'?1.5:brief.density==='rich'?4:2.5;
           let score=a.fit*8+(native?9:0)-Math.abs(v.photoCount-target)*2+random()*8;
           if (v.id===slides.at(-1)?.frameLayout) score-=5;
-          if (family.id==='museum_notes' && slides.length && pool.length===3 && v.photoCount===2) score+=20;
+          if (family.id==='museum_notes' && slides.length && pool.length>=2 && pool.length<=3 && v.photoCount===2) score+=20;
           if (brief.purpose==='impact' && !slides.length && v.photoCount===1) score+=12;
           ranked.push({v,a,score});
         }
