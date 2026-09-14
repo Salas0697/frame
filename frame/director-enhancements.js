@@ -1,6 +1,5 @@
 (()=>{
   const ENHANCE_VER='Director v2';
-  const DB='frame-director-db-v2', STORE='photos';
   S.smartSelect=true; S.magicFill=false; S.referenceMeta=null; S.heroPhotoId=null; S.animate=false;
 
   function addCss(){
@@ -33,12 +32,6 @@
     bar.appendChild(toolbarButton('depthBtn','Depth','wow'));
     const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.id='referenceInput'; document.body.appendChild(inp);
   }
-
-  function dbOpen(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(STORE))db.createObjectStore(STORE,{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-  async function persistFiles(files){try{const db=await dbOpen(),tx=db.transaction(STORE,'readwrite'),st=tx.objectStore(STORE);st.clear();[...files].forEach((f,i)=>{const p=S.photos[i];if(p)st.put({id:p.id,name:f.name,type:f.type,blob:f})})}catch(e){console.warn('persist',e)}}
-  async function restoreFiles(){try{const db=await dbOpen();const rows=await new Promise((res,rej)=>{const r=db.transaction(STORE).objectStore(STORE).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});if(!rows.length)return false;const map=new Map(rows.map(r=>[r.id,{id:r.id,name:r.name,url:URL.createObjectURL(r.blob)}]));S.photos=S.photos.map(p=>map.has(p.id)?{...p,...map.get(p.id)}:p);S.slides.forEach(sl=>sl.layers.forEach(l=>{if(l.type==='img'&&l.photo&&map.has(l.photo.id))l.photo={...l.photo,...map.get(l.photo.id)}}));return true}catch(e){console.warn('restore',e);return false}}
-  const photoInput=$('#photosInput'); if(photoInput) photoInput.addEventListener('change',e=>setTimeout(()=>persistFiles(e.target.files),150),true);
-  const resume=$('#resumeBtn'); if(resume) resume.addEventListener('click',async e=>{setTimeout(async()=>{await restoreFiles();renderAll()},80)},true);
 
   function colorDist(a,b){return Math.hypot(a.avg[0]-b.avg[0],a.avg[1]-b.avg[1],a.avg[2]-b.avg[2])}
   function smartPhotos(list){
