@@ -16,7 +16,7 @@
     .pill{min-height:38px;display:inline-flex;align-items:center;justify-content:center}
     .tool{min-height:58px}.tool .ico{transition:transform .16s var(--spring)}.tool:active .ico{transform:scale(.86)}
     .toolbar{scroll-snap-type:x proximity;padding-bottom:14px}.toolbar .pill{scroll-snap-align:start}
-    .canvasWrap{scroll-behavior:smooth;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+    .canvasWrap{scroll-behavior:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
     .slide{transition:transform .24s var(--spring),box-shadow .24s ease,filter .24s ease}
     .slide.isCurrent{transform:scale(1);box-shadow:0 28px 70px rgba(0,0,0,.5)}
     .slide:not(.isCurrent){transform:scale(.985)}

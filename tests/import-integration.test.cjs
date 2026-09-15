@@ -137,7 +137,7 @@ test('template selector and caption use analyzed photos and survive persistence'
   try {
     h.select(batch(12));await h.complete();
     const select=h.d.querySelector('#templateFamily');
-    assert.equal(select.options.length,9);
+    assert.equal(select.options.length,15);
     select.value='museum_notes';select.dispatchEvent(new h.w.Event('change',{bubbles:true}));
     const s=h.w.__test.state();
     assert.deepEqual(Array.from(s.slides,sl=>sl.layers.filter(l=>l.type==='img').length),[1,2,9]);
