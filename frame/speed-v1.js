@@ -64,7 +64,7 @@ $('#fastNewDesign').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow(
 $('#fastExport').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow();return}if(!fire('#exportAllBtn','#exportBtn'))toast('Exportar no está disponible')};
 $('#fastAdd').onclick=startPhotoFlow;$('#emptyAdd').onclick=startPhotoFlow;
 const exportTool=$('#exportBtn');if(exportTool){let hold=false,timer;exportTool.onclick=null;exportTool.addEventListener('touchstart',()=>{hold=false;timer=setTimeout(()=>{hold=true;openSheet('#exportSheet')},520)},{passive:true});exportTool.addEventListener('touchend',e=>{clearTimeout(timer);if(!hold){e.preventDefault();fire('#exportAllBtn')}},{passive:false})}
-const oldRenderAll=renderAll;renderAll=function(){oldRenderAll();requestAnimationFrame(emptyState)};const oldSave=saveProject;saveProject=function(){const saved=oldSave();remember();return saved};remember();
+const oldRenderAll=renderAll;renderAll=function(){emptyState();oldRenderAll()};const oldSave=saveProject;saveProject=function(){const saved=oldSave();remember();return saved};remember();
 let persistenceWarning=false;
 function progress(message){const loading=$('#loading');loading.querySelector('b').textContent=message;loading.querySelector('span').textContent='';loading.classList.add('on')}
 function showStudio(){
