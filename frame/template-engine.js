@@ -5,6 +5,7 @@
   else root.FrameTemplateEngine = api;
 })(typeof window !== 'undefined' ? window : this, function() {
   const W = 340, H = 425;
+  const colors=typeof module==='object'&&module.exports?require('./photo-colors.js'):window.FramePhotoColors;
   const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
   const aspect = p => Number(p.aspect || p.width / p.height || p.w / p.h) || 1;
   const faces = p => p.faces?.length ? p.faces : p.faceUnion ? [p.faceUnion] : [];
@@ -74,12 +75,6 @@
       return true;
     });
   }
-  function background(family, photos) {
-    if (family.background !== 'single_photo_derived_accent' && family.background !== 'photo') return family.background;
-    if (family.background === 'photo') return '#ffffff';
-    const c = photos.map(p => p.avg || [128,128,128]).sort((a,b) => (Math.max(...b)-Math.min(...b))-(Math.max(...a)-Math.min(...a)))[0];
-    return `rgb(${c.map(v => Math.round(v*.92)).join(',')})`;
-  }
   function heroScore(p){
     const brightness=Number(p.brightness??128),exposure=1-Math.min(1,Math.abs(brightness-128)/128);
     const sharp=Math.log1p(Math.max(0,Number(p.sharpness??p.variance??0)));
@@ -99,7 +94,7 @@
     words.forEach(word=>{const last=lines.length-1;if((lines[last]+' '+word).trim().length>40 && lines[last])lines.push(word);else lines[last]=(lines[last]+' '+word).trim()});
     return lines.join('\n');
   }
-  function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = '', heroPhotoId, backgroundMode = 'auto', frameTreatment = 'gallery'}) {
+  function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = '', heroPhotoId, backgroundMode = 'auto', frameTreatment = 'gallery', backgroundColor}) {
     if (!photos.length) return {slides: [], familyId: null, signature: ''};
     const random = seeded(seed), families = catalog.families;
     const weights = families.map(f => {
@@ -119,7 +114,7 @@
     const family = families.find(f=>f.id===familyId) || weighted(fresh.length?fresh:weights.filter(row=>row.weight>0), random).f;
     const gallery = families.find(f=>f.id==='gallery_book').variants;
     const pairs = families.find(f=>f.id==='editorial_pair').variants;
-    const bg = backgroundMode === 'white' ? '#ffffff' : backgroundMode === 'black' ? '#101012' : backgroundMode === 'color' ? background({background:'single_photo_derived_accent'},photos) : background(family, photos);
+    const bg = colors.resolve(backgroundMode,photos,backgroundColor);
     const candidates = [];
     for (let attempt = 0; attempt < 12; attempt++) {
       let serial = 0, pool = [...photos], slides = [], totalFit = 0, fitCount = 0;

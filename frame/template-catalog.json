@@ -626,7 +626,7 @@
           }
         }
       ],
-      "description": "Tiras y hojas de contacto sobre fondo oscuro."
+      "description": "Tiras y hojas de contacto con ritmo de película."
     },
     {
       "id": "travel_journal",
@@ -1437,7 +1437,7 @@
     {
       "id": "cinema_club",
       "name": "Cinema Club",
-      "description": "Bandas panorámicas y negro profundo, como fotogramas.",
+      "description": "Bandas panorámicas y pausas amplias, como fotogramas.",
       "priority": 1,
       "initialWeight": 12,
       "preferPurpose": [

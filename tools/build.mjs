@@ -8,7 +8,7 @@ const source = await readFile(path.join(root, 'frame/director/base.html'), 'utf8
 const core = source.match(/<script>([\s\S]*?)<\/script>/);
 if (!core) throw new Error('Missing core script');
 const modules = [
-  'crop-geometry.js', 'photo-store.js', 'photo-import-controller.js', 'photo-location.js', 'photo-analysis.js',
+  'crop-geometry.js', 'photo-colors.js', 'photo-store.js', 'photo-import-controller.js', 'photo-location.js', 'photo-analysis.js',
   'director-enhancements.js', 'interaction-v1.js', 'speed-v1.js',
   'ux-rescue-v1.js', 'template-engine.js', 'storyboard-v1.js', 'photo-editor-v2.js'
 ];

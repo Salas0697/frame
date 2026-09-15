@@ -19,7 +19,7 @@ function hideClutter(){const bar=$('#controlBar');if(bar)bar.classList.add('spee
 function emptyState(){const isEmpty=!S.photos?.length||!S.slides?.length;studio?.classList.toggle('emptyStateFast',isEmpty);empty.classList.toggle('on',isEmpty);if(isEmpty){const count=studio?.querySelector('.studioTop small');if(count)count.textContent='Nuevo proyecto'}return isEmpty}
 hideClutter();emptyState();
 function remember(){prefs.slides=S.slides?.length||prefs.slides;try{localStorage.setItem(PREF,JSON.stringify(prefs))}catch(e){console.warn('Preferences unavailable',e)}}
-function snapshot(){return clone({slides:S.slides,currentSlide:S.currentSlide,randomMode:S.randomMode,showSafe:S.showSafe,finish:S.finish,designDNA:S.designDNA,frameBrief:S.frameBrief,frameTemplateFamily:S.frameTemplateFamily||'',frameCaption:S.frameCaption||'',frameArtDirection:S.frameArtDirection||'',frameLastDesign:S.frameLastDesign||null,frameBackground:S.frameBackground||'auto',frameTreatment:S.frameTreatment||'gallery',heroPhotoId:S.heroPhotoId||null,frameLocation:S.frameLocation||null})}
+function snapshot(){return clone({slides:S.slides,currentSlide:S.currentSlide,randomMode:S.randomMode,showSafe:S.showSafe,finish:S.finish,designDNA:S.designDNA,frameBrief:S.frameBrief,frameTemplateFamily:S.frameTemplateFamily||'',frameCaption:S.frameCaption||'',frameArtDirection:S.frameArtDirection||'',frameLastDesign:S.frameLastDesign||null,frameBackground:S.frameBackground||'auto',frameBackgroundColor:S.frameBackgroundColor||null,frameTreatment:S.frameTreatment||'gallery',heroPhotoId:S.heroPhotoId||null,frameLocation:S.frameLocation||null})}
 let quickUndo=null,undoTimer=null;function offerUndo(snap,label){quickUndo=snap;undoAction.classList.add('on');clearTimeout(undoTimer);undoTimer=setTimeout(()=>undoAction.classList.remove('on'),3000);toast(label)}undoAction.onclick=()=>{if(!quickUndo||busy)return;Object.assign(S,quickUndo);quickUndo=null;undoAction.classList.remove('on');renderAll();saveProject();toast('Deshecho')};
 function syncBriefUI(){$('#briefLocationOptions').hidden=briefState.location!=='yes';brief.querySelectorAll('[data-key]').forEach(group=>{const key=group.dataset.key;group.querySelectorAll('button').forEach(b=>{b.classList.toggle('on',briefState[key]===b.dataset.v);b.setAttribute('aria-pressed',String(briefState[key]===b.dataset.v))})})}
 brief.addEventListener('click',e=>{const b=e.target.closest('[data-key] button');if(!b)return;const g=b.closest('[data-key]');briefState[g.dataset.key]=b.dataset.v;syncBriefUI()});
@@ -107,6 +107,7 @@ $('#resumeBtn').onclick=async()=>{
     try{saved=JSON.parse(localStorage.getItem(SAVE_KEY)||'null')}catch(e){}
     if(!saved?.photos?.length||!Array.isArray(saved.slides))throw new Error('No saved project');
     await FramePhotoStore.restore(saved);
+    await FramePhotoColors.ensure(saved.photos);
     S=saved;showStudio();toast('Proyecto restaurado');
   }catch(error){S=previous;console.warn('Project restore failed',error);toast('No pude restaurar los originales guardados')}
   finally{$('#loading').classList.remove('on');photoInput.disabled=false;setBusy(false)}
