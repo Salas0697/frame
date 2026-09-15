@@ -31,5 +31,6 @@ test('legacy saved projects recover measured colors from their originals and sug
  await page.getByText('Fondo y marco',{exact:true}).click();const first=await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color));
  const index=await page.evaluate(first=>S.slides.findIndex(sl=>!first.includes(sl.layers.find(l=>l.type==='img').photo.dominantColors[0].hex)),first);
  expect(index).toBeGreaterThan(0);await page.locator('#filmstrip .thumb').nth(index).click();await expect(page.locator('#backgroundSource')).toContainText('página '+(index+1));
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));expect(await page.evaluate(()=>S.currentSlide)).toBe(index);
  const next=await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color));expect(next).not.toEqual(first);
 });
