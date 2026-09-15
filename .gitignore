@@ -1,2 +1,5 @@
 node_modules/
 .qa/
+
+test-results/
+playwright-report/
