@@ -50,7 +50,7 @@ class PhotoImportController {
       this.transition('analysis');
       this.ports.showProgress('Analizando tus fotos…');
       await this.ports.yieldToPaint();
-      photos = await this.ports.analyzePhotos(files, message => this.ports.showProgress(message));
+      photos = await this.ports.analyzePhotos(files, message => this.ports.showProgress(message), brief);
       if (photos.length !== files.length) throw new Error('Incomplete photo analysis');
       checkpoint = this.ports.checkpoint();
       this.transition('commit');

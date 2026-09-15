@@ -17,16 +17,18 @@ const FramePhotoStore = (() => {
     if (files.length !== photos.length) throw new Error('File/photo count mismatch');
     const db = await open();
     try {
-      await new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, 'readwrite');
-        tx.oncomplete = resolve;
-        tx.onabort = () => reject(tx.error || new Error('Photo storage aborted'));
-        tx.onerror = () => reject(tx.error);
-        // Append/upsert only: importing another batch must retain the first batch.
-        files.forEach((file, i) => tx.objectStore(STORE).put({
-          id: photos[i].id, name: file.name, type: file.type, blob: file
-        }));
-      });
+      // Materialize one original at a time before opening its transaction.
+      // WebKit can reject picker-backed Files during IndexedDB serialization.
+      for(let i=0;i<files.length;i++) {
+        const file=files[i], bytes=await file.arrayBuffer();
+        await new Promise((resolve,reject)=>{
+          const tx=db.transaction(STORE,'readwrite');
+          tx.oncomplete=resolve;
+          tx.onabort=()=>reject(tx.error||new Error('Photo storage aborted'));
+          tx.onerror=e=>reject(e.target.error||tx.error||new Error('Photo storage failed'));
+          tx.objectStore(STORE).put({id:photos[i].id,name:file.name,type:file.type,bytes});
+        });
+      }
     } finally { db.close(); }
   }
   async function restore(project) {
@@ -46,7 +48,7 @@ const FramePhotoStore = (() => {
     }
     const restored = new Map(project.photos.map(photo => {
       const row = stored.get(photo.id);
-      return [photo.id, {...photo, name: row.name, url: URL.createObjectURL(row.blob)}];
+      return [photo.id, {...photo, name: row.name, url: URL.createObjectURL(row.bytes ? new Blob([row.bytes],{type:row.type}) : row.blob)}];
     }));
     project.photos = project.photos.map(photo => restored.get(photo.id));
     project.slides.forEach(slide => slide.layers.forEach(layer => {
