@@ -81,3 +81,44 @@ test('finishes, fixed page, crop transaction, cover, full miniatures and PNG exp
  expect(errors).toEqual([]);
  await page.screenshot({path:'test-results/premium-'+test.info().project.name+'.png'});
 });
+
+test('collection library opens, closes, selects all new families and exports both photographic mounts',async({page})=>{
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('/');await upload(page,12);
+ await page.locator('#browseCollections').click();await expect(page.locator('#collectionLibrary')).toBeVisible();await expect(page.locator('.collectionCard')).toHaveCount(14);
+ await page.screenshot({path:'test-results/library-'+test.info().project.name+'.png'});
+ await page.locator('#closeCollections').press('Escape');await expect(page.locator('#collectionLibrary')).toBeHidden();await expect(page.locator('#browseCollections')).toBeFocused();
+ const families=['full_bleed','offset_studies','cinema_club','collector','column_house','contact_press'];
+ for(const family of families){
+  await page.locator('#browseCollections').click();await page.locator('[data-collection="'+family+'"]').click();
+  await expect(page.locator('#collectionLibrary')).toBeHidden();await expect(page.locator('#templateFamily')).toHaveValue(family);
+  expect(await page.locator('#stage .imgLayer').evaluateAll(els=>els.map(e=>e.alt).sort())).toEqual(ids.map(id=>'photo-'+id+'.jpg').sort());
+  await expect(page.locator('#stage .slide').first()).toHaveAttribute('data-family',family);
+  await page.screenshot({path:'test-results/collection-'+family+'-'+test.info().project.name+'.png'});
+ }
+ await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#frameBackground').selectOption('color');
+ for(const treatment of ['print','darkroom']){
+  await page.locator('#frameTreatment').selectOption(treatment);
+  const exported=await page.evaluate(async()=>{const sl=S.slides[0],paper=sl.layers.find(l=>l.framePaper),file=await renderSlideToFile(0),im=await createImageBitmap(file),cv=document.createElement('canvas');cv.width=1080;cv.height=1350;const ctx=cv.getContext('2d');ctx.drawImage(im,0,0);const sc=1080/340,pixel=ctx.getImageData(Math.round((paper.x+paper.w/2)*sc),Math.round((paper.y+paper.h*.97)*sc),1,1).data;return {width:im.width,height:im.height,pixel:Array.from(pixel),color:paper.color}});
+  expect(exported.width).toBe(1080);expect(exported.height).toBe(1350);expect(exported.pixel.slice(0,3)).toEqual(treatment==='print'?[255,255,255]:[8,8,9]);
+ }
+ expect(errors).toEqual([]);
+});
+test('another option explores fresh collections, preserves recency on restore and varies a fixed cover without more analysis',async({page})=>{
+ await page.addInitScript(()=>{window.importPhases=[];document.addEventListener('frame:import-phase',e=>window.importPhases.push(e.detail.phase))});
+ await page.goto('/');await upload(page,12);
+ const phases=await page.evaluate(()=>window.importPhases),visited=[];
+ for(let i=0;i<7;i++){
+  const family=await page.locator('#stage .slide').first().getAttribute('data-family');expect(visited.slice(-3)).not.toContain(family);visited.push(family);
+  await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);await page.locator('#fastNewDesign').click();await expect(page.locator('#stage .slide').first()).not.toHaveAttribute('data-family',family);
+ }
+ expect(await page.evaluate(()=>window.importPhases)).toEqual(phases);await expect(page.locator('#frameBrief')).toBeHidden();
+ const recent=await page.evaluate(()=>S.frameLastDesign.recentFamilies);
+ await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);
+ expect(await page.evaluate(()=>S.frameLastDesign.recentFamilies)).toEqual(recent);
+ await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);await page.locator('#fastNewDesign').click();await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(recent).not.toContain(await page.locator('#stage .slide').first().getAttribute('data-family'));
+ await page.locator('#templateFamily').selectOption('collector');
+ const photo=page.locator('#stage .imgLayer').first();await photo.click();await page.locator('#uxEdit').click();await page.locator('#peHero').click();
+ const before=await page.locator('#stage .slide').first().getAttribute('data-layout'),name=await page.locator('#stage .imgLayer').first().getAttribute('alt');
+ await page.locator('#fastNewDesign').click();await expect(page.locator('#stage .slide').first()).not.toHaveAttribute('data-layout',before);await expect(page.locator('#stage .slide').first()).toHaveAttribute('data-family','collector');await expect(page.locator('#stage .imgLayer').first()).toHaveAttribute('alt',name);
+});

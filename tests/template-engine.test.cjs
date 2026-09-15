@@ -57,9 +57,9 @@ test('continuous rejects a face across a seam and permits safe panoramas',()=>{
   verify(result,source);assert.ok(result.slides.length>=2);
   result.slides.forEach((sl,i)=>assert.equal(sl.layers[0].x,-340*i));
 });
-test('all eighteen catalog variants are reachable with suitable photos',()=>{
+test('all catalog variants are reachable with suitable photos',()=>{
   const seen=new Set();
-  for(const count of [4,6,9])engine.generate({catalog,photos:photos(count),familyId:'museum_notes',seed:1}).slides.forEach(sl=>seen.add(sl.frameLayout));
+  for(const f of catalog.families)for(const count of [4,6,8,9,12])engine.generate({catalog,photos:photos(count),familyId:f.id,seed:1,brief:{density:'rich'}}).slides.forEach(sl=>seen.add(sl.frameLayout));
   for(const f of catalog.families)for(let seed=1;seed<=35;seed++){
     const source=photos(12).map(p=>({...p,aspect:seed%2?.75:2.4}));
     engine.generate({catalog,photos:source,familyId:f.id,seed,brief:{density:seed%3?'balanced':'rich'}}).slides.forEach(sl=>seen.add(sl.frameLayout));
@@ -75,4 +75,37 @@ test('caption stays in the footer and is omitted without user text',()=>{
   assert.equal(notes.length,1);assert.equal(notes[0].font,'mono');
   assert.ok(notes[0].y>=425*.9);assert.ok(notes[0].y+notes[0].text.split('\n').length*6.5<=425*.97);
   assert.ok(engine.captionLines('X'.repeat(120)).split('\n').every(l=>l.length<=40));
+});
+
+test('automatic exploration avoids the last three collections and changes geometry, not just photo order',()=>{
+ const source=photos(12),families=[],shapes=new Set();let previous;
+ for(let seed=1;seed<=24;seed++){
+  const result=engine.generate({catalog,photos:source,brief:{purpose:'story',vibe:'clean'},previous,seed});
+  assert.ok(!families.slice(-3).includes(result.familyId),'recent collection repeated');verify(result,source);
+  shapes.add(JSON.stringify(result.slides.map(sl=>sl.layers.filter(l=>l.type==='img').map(l=>[Math.round(l.x),Math.round(l.y),Math.round(l.w),Math.round(l.h)]))));
+  families.push(result.familyId);previous={dir:result.familyId,signature:result.signature,layouts:result.slides.map(sl=>sl.frameLayout),recentFamilies:result.recentFamilies};
+ }
+ assert.ok(new Set(families).size>=8);assert.ok(shapes.size>=16);
+});
+test('every collection has two reachable cover geometries while retaining the chosen photo and safe group crop',()=>{
+ const source=[{id:'chosen',aspect:2.2,faces:[{x:.03,y:.2,w:.92,h:.5}],faceCount:4}];
+ for(const family of catalog.families){
+  const a=engine.generate({catalog,photos:source,familyId:family.id,heroPhotoId:'chosen',seed:1});
+  const b=engine.generate({catalog,photos:source,familyId:family.id,heroPhotoId:'chosen',seed:2,previous:{dir:family.id,layouts:a.slides.map(sl=>sl.frameLayout),signature:a.signature}});
+  verify(a,source);verify(b,source);assert.notEqual(a.slides[0].frameLayout,b.slides[0].frameLayout,family.id);
+  assert.notDeepEqual(a.slides[0].layers.map(l=>[l.x,l.y,l.w,l.h]),b.slides[0].layers.map(l=>[l.x,l.y,l.w,l.h]));
+  for(const r of [a,b])assert.ok(engine.crop(source[0],r.slides[0].layers[0].w,r.slides[0].layers[0].h).safe);
+ }
+});
+test('photographic paper and dark mounts preserve the crop and reserve a larger lower border',()=>{
+ const source=photos(8);
+ for(const treatment of ['print','darkroom'])for(const f of catalog.families.filter(f=>f.id!=='continuous')){
+  const plain=engine.generate({catalog,photos:source,familyId:f.id,seed:16});
+  const framed=engine.generate({catalog,photos:source,familyId:f.id,seed:16,frameTreatment:treatment});verify(framed,source);
+  for(let i=0;i<framed.slides.length;i++){
+   const images=framed.slides[i].layers.filter(l=>l.type==='img'),papers=framed.slides[i].layers.filter(l=>l.framePaper);
+   assert.equal(images.length,papers.length);
+   images.forEach((l,j)=>{const old=plain.slides[i].layers.filter(l=>l.type==='img')[j],paper=papers[j];assert.equal(l.offX,old.offX);assert.equal(l.offY,old.offY);assert.ok(Math.abs(l.w/l.h-old.w/old.h)<1e-9);assert.ok(paper.y+paper.h-l.y-l.h>l.y-paper.y);assert.equal(paper.color,treatment==='print'?'#ffffff':'#080809')});
+  }
+ }
 });

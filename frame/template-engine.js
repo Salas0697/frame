@@ -49,7 +49,7 @@
     for (const {s, i} of order) {
       const ranked = free.map(p => {
         let slot = s, c = crop(p, s.w * W, s.h * H);
-        if (variant.photoCount === 1) { slot = fittedSlot(s, p); c = crop(p, slot.w * W, slot.h * H); }
+        if (variant.photoCount === 1 && !(variant.id.startsWith('bleed_') && c.safe && c.retained >= .68)) { slot = fittedSlot(s, p); c = crop(p, slot.w * W, slot.h * H); }
         const count = p.faceCount || faces(p).length, area = slot.w * slot.h;
         const dense = variant.photoCount > 1;
         const safe = c.safe && !(dense && count >= 3 && area < .28) && !(dense && count >= 2 && area < .14) && !(allowOverlap && count);
@@ -110,10 +110,13 @@
       if (brief.vibe === 'color' && f.id === 'color_editorial') weight *= 8;
       if (brief.vibe === 'bold' && f.id === 'soft_scrapbook') weight *= 5;
       if (brief.purpose === 'showcase' && f.id === 'museum_notes') weight *= 2.5;
-      if (previous?.dir === f.id) weight *= .85;
+      // Recency is handled as eligibility, so high weights cannot immediately repeat.
+      if (f.id==='continuous' && !photos.some(p=>canSpread(p,2))) weight=0;
       return {f, weight};
     });
-    const family = families.find(f=>f.id===familyId) || weighted(weights, random).f;
+    const recent = [...new Set([...(previous?.recentFamilies||[]),previous?.dir].filter(Boolean))].slice(-3);
+    const fresh = weights.filter(row=>row.weight>0 && !recent.includes(row.f.id));
+    const family = families.find(f=>f.id===familyId) || weighted(fresh.length?fresh:weights.filter(row=>row.weight>0), random).f;
     const gallery = families.find(f=>f.id==='gallery_book').variants;
     const pairs = families.find(f=>f.id==='editorial_pair').variants;
     const bg = backgroundMode === 'white' ? '#ffffff' : backgroundMode === 'black' ? '#101012' : backgroundMode === 'color' ? background({background:'single_photo_derived_accent'},photos) : background(family, photos);
@@ -135,18 +138,21 @@
       const wantedHero=pool.find(p=>p.id===heroPhotoId);
       if(wantedHero || (pool.length>=4 && ['story','impact'].includes(brief.purpose))){
         const hero=wantedHero||[...pool].sort((a,b)=>heroScore(b)-heroScore(a))[0];
-        const box=brief.purpose==='impact'?{x:.025,y:.025,w:.95,h:.95}:{x:.08,y:.06,w:.84,h:.80};
+        const covers=family.covers||[{id:'editorial_hero',slots:[{x:.08,y:.06,w:.84,h:.80}],captionRegion:{x:.08,y:.9,w:.84,h:.06}}];
+        const freshCovers=covers.filter(v=>v.id!==previous?.layouts?.[0]);
+        const cover=(freshCovers.length?freshCovers:covers)[attempt % (freshCovers.length||covers.length)];
+        const box=cover.slots[0];
         const fit=crop(hero,box.w*W,box.h*H);
         const slot=fit.safe && fit.retained>.82 ? box : fittedSlot(box,hero);
-        const c=crop(hero,slot.w*W,slot.h*H),sl=page('editorial_hero');
+        const c=crop(hero,slot.w*W,slot.h*H),sl=page(cover.id);
         sl.layers.push(layer(hero,slot,c));sl.frameHero=true;
-        if(box.h<.9)sl.frameCaptionRegion={x:.08,y:.9,w:.84,h:.06};
+        if(cover.captionRegion)sl.frameCaptionRegion={...cover.captionRegion};
         slides.push(sl);pool=pool.filter(p=>p.id!==hero.id);totalFit+=c.retained;fitCount++;
       }
       // Dense, orderly grids are intentional layouts, never nine "too small" penalties.
-      if (family.id === 'museum_notes') {
+      if (['museum_notes','contact_press'].includes(family.id)) {
         const grids = [...family.variants].sort((a,b)=>b.photoCount-a.photoCount);
-        const max = brief.density === 'airy' && brief.purpose !== 'showcase' ? 6 : 9;
+        const max = family.id==='contact_press' ? (brief.density==='airy'?4:brief.density==='rich'?12:8) : brief.density === 'airy' && brief.purpose !== 'showcase' ? 6 : 9;
         const eligible = grids.filter(v=>v.photoCount<=max && v.photoCount<=pool.length);
         for (const v of eligible) {
           const assigned = assign(v,pool,random);
@@ -171,7 +177,10 @@
       while (pool.length) {
         let options = family.variants.filter(v=>v.pageSpan===1);
         if (family.id==='museum_notes' && slides.length) options=[...pairs,...gallery];
-        else options=[...options,...gallery,...pairs];
+        else {
+          // Keep each collection's silhouette; a family cover is the safe single fallback.
+          options=[...options,...(family.covers||gallery)];
+        }
         options=[...new Map(options.map(v=>[v.id,v])).values()];
         const ranked=[];
         for (const v of options) {
@@ -206,14 +215,23 @@
           sl.layers.forEach(l=>{l.x=W*.045+l.x*.91;l.y=H*.045+l.y*.91;if(l.type==='img'){l.w*=.91;l.h*=.91}else if(l.type==='text'){l.w*=.91;l.size*=.91}});
           if(sl.frameCaptionRegion){const r=sl.frameCaptionRegion;sl.frameCaptionRegion={x:.045+r.x*.91,y:.045+r.y*.91,w:r.w*.91,h:r.h*.91}}
         }
+        if(['print','darkroom'].includes(frameTreatment)){
+          const paper=frameTreatment==='print'?'#ffffff':'#080809';
+          const images=sl.layers.filter(l=>l.type==='img');
+          for(const l of images){
+            const backing={id:uid(),type:'deco',kind:'frame',x:l.x,y:l.y,w:l.w,h:l.h,rot:l.rot,z:l.z-.5,color:paper,framePaper:true,hidden:false,locked:true};
+            const k=.86;l.x+=l.w*(1-k)/2;l.y+=l.h*.045;l.w*=k;l.h*=k;
+            sl.layers.push(backing);
+          }
+        }
         if(frameTreatment==='fine')sl.layers.filter(l=>l.type==='img').forEach(l=>{l.frameBorder=.55;l.frameBorderColor=bg==='#101012'||bg==='#161616'?'#eeeeee':'#202020'});
         sl.layers.filter(l=>l.frameCaption).forEach(l=>{l.color=captionInk(bg)});
       }
       const sig=signature(slides);
       let score=totalFit/Math.max(fitCount,1)*12 + random()*4;
       if (previous?.signature===sig) score-=100;
-      if (previous?.layouts?.join('|')===slides.map(sl=>sl.frameLayout).join('|')) score-=4;
-      candidates.push({slides,familyId:family.id,familyName:family.name,signature:sig,score});
+      if (previous?.layouts?.join('|')===slides.map(sl=>sl.frameLayout).join('|')) score-=60;
+      candidates.push({slides,familyId:family.id,familyName:family.name,signature:sig,recentFamilies:[...recent.filter(id=>id!==family.id),family.id].slice(-3),score});
     }
     candidates.sort((a,b)=>b.score-a.score);
     return candidates[0];
