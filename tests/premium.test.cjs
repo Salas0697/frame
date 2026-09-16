@@ -12,13 +12,13 @@ test('crop drag direction, limits, contain, zoom anchoring and export scaling',(
  assert.equal(crop.pan(l,100,100,1000,0).offX,-50);
 });
 test('explicit cover is first, unique, and frame/background choices are deterministic',()=>{
- const photos=Array.from({length:12},(_,i)=>({id:'p'+i,aspect:.75,avg:[160,35,45],brightness:128,sharpness:400}));
+ const photos=Array.from({length:12},(_,i)=>({id:'p'+i,aspect:.75,avg:[160,35,45],dominantColors:[{rgb:[176,28,41],hex:'#b01c29',weight:.7}],brightness:128,sharpness:400}));
  const r=engine.generate({catalog,photos,heroPhotoId:'p7',familyId:'museum_notes',backgroundMode:'black',frameTreatment:'fine',seed:1});
  assert.equal(r.slides[0].layers[0].photo.id,'p7');assert.equal(r.slides[0].frameHero,true);
  assert.equal(r.slides.flatMap(s=>s.layers).filter(l=>l.type==='img'&&l.photo.id==='p7').length,1);
  assert.ok(r.slides.every(s=>s.bg==='#101012'));assert.ok(r.slides.flatMap(s=>s.layers).every(l=>l.frameBorder===.55));
  const color=engine.generate({catalog,photos,familyId:'color_editorial',backgroundMode:'color',seed:1}).slides[0].bg;
- assert.equal(color,'rgb(147,32,41)');
+ assert.equal(color,'#b01c29');
 });
 test('cover scoring favors exposure and sharpness over raw variance',()=>{
  const good={aspect:.75,brightness:128,sharpness:500,variance:200,score:100,width:1800,height:2400};
