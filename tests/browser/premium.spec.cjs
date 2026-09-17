@@ -15,13 +15,13 @@ async function upload(page,n){
  const chooserPromise=page.waitForEvent('filechooser');
  await page.locator('#photosInput').click();const chooser=await chooserPromise;
  await chooser.setFiles(ids.slice(0,n).map(id=>path.join(dir,'photo-'+id+'.jpg')));
- await expect(page.locator('#frameBrief')).toBeVisible();
- await expect(page.locator('.frameBriefEyebrow')).toHaveText(n+' fotos seleccionadas');
- await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','brief');
+ await expect(page.locator('#templateJourney')).toBeVisible();
+ await expect(page.locator('#journeyStatus')).toContainText(n+' fotos');
+ await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','templates');
  await expect(page.locator('#loading')).toBeHidden();
- await page.getByRole('button',{name:'Mostrar muchas fotos',exact:true}).click();
- await page.getByRole('button',{name:'Editorial / limpio',exact:true}).click();
- await page.getByRole('button',{name:'Diseñar ✦',exact:true}).click();
+
+
+ await page.locator('#journeyCreate').click();
  await expect(page.locator('#studioScreen')).toHaveClass(/on/);
  await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
  const names=await page.locator('#stage .imgLayer').evaluateAll(els=>els.map(e=>e.alt).sort());
@@ -33,9 +33,9 @@ for(const n of [8,10,12])test('real photo import '+n+' waits for brief and varia
  await page.addInitScript(()=>{window.importPhases=[];document.addEventListener('frame:import-phase',e=>window.importPhases.push(e.detail.phase))});
  await page.goto('/');await upload(page,n);
  const phases=await page.evaluate(()=>window.importPhases);
- expect(phases).toContain('analysis');expect(phases.indexOf('brief')).toBeLessThan(phases.indexOf('analysis'));
+ expect(phases).toContain('analysis');expect(phases.indexOf('templates')).toBeLessThan(phases.indexOf('analysis'));
  const before=await page.locator('#stage .slide').first().getAttribute('data-layout');
- await page.locator('#fastNewDesign').click();await expect(page.locator('#frameBrief')).toBeHidden();
+ await page.locator('#fastNewDesign').click();await expect(page.locator('#templateJourney')).toBeHidden();
  expect(await page.evaluate(()=>window.importPhases)).toEqual(phases);
  await expect(page.locator('#stats')).toContainText(n+' fotos');
  expect(errors).toEqual([]);
@@ -88,13 +88,13 @@ test('finishes, fixed page, crop transaction, cover, full miniatures and PNG exp
 test('collection library opens, closes, selects all new families and exports both photographic mounts',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');await upload(page,12);
- await page.locator('#browseCollections').click();await expect(page.locator('#collectionLibrary')).toBeVisible();await expect(page.locator('.collectionCard')).toHaveCount(14);
+ await page.locator('#browseCollections').click();await expect(page.locator('#templateJourney')).toBeVisible();await page.locator('#journeyMore').click();await expect(page.locator('.journeyTemplate')).toHaveCount(14);
  await page.screenshot({path:'test-results/library-'+test.info().project.name+'.png'});
- await page.locator('#closeCollections').press('Escape');await expect(page.locator('#collectionLibrary')).toBeHidden();await expect(page.locator('#browseCollections')).toBeFocused();
+ await page.locator('#journeyCancel').press('Escape');await expect(page.locator('#templateJourney')).toBeHidden();await expect(page.locator('#browseCollections')).toBeFocused();
  const families=['full_bleed','offset_studies','cinema_club','collector','column_house','contact_press'];
  for(const family of families){
-  await page.locator('#browseCollections').click();await page.locator('[data-collection="'+family+'"]').click();
-  await expect(page.locator('#collectionLibrary')).toBeHidden();await expect(page.locator('#templateFamily')).toHaveValue(family);
+  await page.locator('#browseCollections').click();await page.locator('#journeyMore').click();await page.locator('.journeyTemplate[data-family="'+family+'"]').click();await page.locator('#journeyCreate').click();
+  await expect(page.locator('#templateJourney')).toBeHidden();await expect(page.locator('#templateFamily')).toHaveValue(family);
   expect(await page.locator('#stage .imgLayer').evaluateAll(els=>els.map(e=>e.alt).sort())).toEqual(ids.map(id=>'photo-'+id+'.jpg').sort());
   await expect(page.locator('#stage .slide').first()).toHaveAttribute('data-family',family);
   await page.screenshot({path:'test-results/collection-'+family+'-'+test.info().project.name+'.png'});
@@ -110,12 +110,13 @@ test('collection library opens, closes, selects all new families and exports bot
 test('another option explores fresh collections, preserves recency on restore and varies a fixed cover without more analysis',async({page})=>{
  await page.addInitScript(()=>{window.importPhases=[];document.addEventListener('frame:import-phase',e=>window.importPhases.push(e.detail.phase))});
  await page.goto('/');await upload(page,12);
+ await page.locator('#templateFamily').selectOption('');
  const phases=await page.evaluate(()=>window.importPhases),visited=[];
  for(let i=0;i<7;i++){
   const family=await page.locator('#stage .slide').first().getAttribute('data-family');expect(visited.slice(-3)).not.toContain(family);visited.push(family);
   await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);await page.locator('#fastNewDesign').click();await expect(page.locator('#stage .slide').first()).not.toHaveAttribute('data-family',family);
  }
- expect(await page.evaluate(()=>window.importPhases)).toEqual(phases);await expect(page.locator('#frameBrief')).toBeHidden();
+ expect(await page.evaluate(()=>window.importPhases)).toEqual(phases);await expect(page.locator('#templateJourney')).toBeHidden();
  const recent=await page.evaluate(()=>S.frameLastDesign.recentFamilies);
  await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);
  expect(await page.evaluate(()=>S.frameLastDesign.recentFamilies)).toEqual(recent);

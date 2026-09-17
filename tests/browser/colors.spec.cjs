@@ -3,9 +3,9 @@ const dir=path.resolve('test-results/color-fixtures'),measured=['#dc141e','#14a0
 test.beforeAll(async()=>{await fs.mkdir(dir,{recursive:true});for(let i=0;i<8;i++)await fs.writeFile(path.join(dir,'color-'+i+'.png'),i%2?png([35,70,190],[230,189,40]):png([220,20,30],[20,160,60]))});
 async function prepare(page){
  await page.goto('/');const wait=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await wait).setFiles(Array.from({length:8},(_,i)=>path.join(dir,'color-'+i+'.png')));
- await expect(page.locator('#frameBrief')).toBeVisible();expect(await page.locator('#backgroundSwatches button').count()).toBe(0);
- await page.getByRole('button',{name:'Guardar el momento',exact:true}).click();await page.getByRole('button',{name:'Diseñar ✦',exact:true}).click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
- await page.locator('#templateFamily').selectOption('gallery_book');await page.getByText('Fondo y marco',{exact:true}).click();
+ await expect(page.locator('#templateJourney')).toBeVisible();expect(await page.locator('#backgroundSwatches button').count()).toBe(0);
+ await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
+ await page.evaluate(()=>S.frameBrief.purpose='memory');await page.locator('#templateFamily').selectOption('gallery_book');await page.getByText('Fondo y marco',{exact:true}).click();
 }
 test('measured swatches support page/all scope, undo, variation, PNG and restore without changing crops',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await prepare(page);

@@ -31,7 +31,7 @@
   };
   window.FRAME_generateStory = buildStory;
   window.FRAME_rebuildStory = () => {
-    if (!S.photos?.length || window.framePhotoImport?.phase === 'brief') return;
+    if (!S.photos?.length || window.framePhotoImport?.active) return;
     pushHistory(); buildStory(); renderAll(); saveProject();
     toast('Otra composición lista ✦');
   };
@@ -40,7 +40,7 @@
   bar.className = 'templateBar';
   const label = document.createElement('label'); label.htmlFor='templateFamily'; label.textContent='Estilo';
   const select = document.createElement('select'); select.id='templateFamily';
-  select.append(new Option('Automático · según tu brief',''));
+  select.append(new Option('Sorpréndeme · todas las colecciones',''));
   catalog.families.forEach(f=>select.append(new Option(f.name,f.id)));
   const notes = document.createElement('details'); notes.className='templateNotes';
   const summary = document.createElement('summary'); summary.textContent='Nota al pie';
@@ -62,6 +62,7 @@
     renderAll();saveProject();
   }
   document.querySelector('.quickbar')?.after(bar);
+  const hint=document.createElement('p');hint.className='journeyEditorHint';hint.textContent='03 · Ajusta y comparte · Toca una foto para reencuadrar. Otra opción cambia la composición de tu template.';bar.after(hint);
   $('#locationPosition').onchange=changeLocation;$('#locationText').onchange=changeLocation;
   for(const [id,key] of [['frameTreatment','frameTreatment']]){
     $('#'+id).onchange=e=>{if(e.target.disabled||!S.photos.length)return;pushHistory();S[key]=e.target.value;buildStory();renderAll();saveProject()};
@@ -84,27 +85,16 @@
   document.addEventListener('frame:import-phase',e=>{scope.disabled=e.detail.phase!=='idle';swatches.querySelectorAll('button').forEach(b=>b.disabled=scope.disabled)});
   const browse=document.createElement('button');browse.type='button';browse.id='browseCollections';browse.className='browseCollections';browse.textContent='Explorar '+catalog.families.length+' colecciones';browse.setAttribute('aria-haspopup','dialog');
   bar.insertBefore(browse,collectionNote);
-  const library=document.createElement('div');library.id='collectionLibrary';library.className='collectionLibrary';library.hidden=true;library.setAttribute('role','dialog');library.setAttribute('aria-modal','true');library.setAttribute('aria-labelledby','collectionLibraryTitle');
-  const libraryPanel=document.createElement('div');libraryPanel.className='collectionLibraryPanel';
-  libraryPanel.innerHTML='<div class="libraryHeading"><div><span>FRAME / COLLECTIONS</span><h3 id="collectionLibraryTitle">Una mirada distinta.</h3></div><button type="button" id="closeCollections" aria-label="Cerrar colecciones">Cerrar</button></div><p class="libraryIntro">Elige una colección o deja que Otra opción te sorprenda. Los esquemas muestran su composición; FRAME la adapta a tus fotos.</p><div class="collectionGrid"></div>';
-  library.append(libraryPanel);document.body.append(library);
-  let libraryFocus,libraryOverflow;
-  function closeLibrary(){if(library.hidden)return;library.hidden=true;document.body.style.overflow=libraryOverflow;libraryFocus?.focus?.({preventScroll:true})}
-  const close=library.querySelector('#closeCollections');close.onclick=closeLibrary;
-  library.onclick=e=>{if(e.target===library)closeLibrary()};
-  library.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();closeLibrary()}if(e.key==='Tab'){const buttons=[...library.querySelectorAll('button')],first=buttons[0],last=buttons.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}});
-  function chooseCollection(id){select.value=id;closeLibrary();select.onchange()}
-  const automatic=document.createElement('button');automatic.type='button';automatic.className='collectionAuto';automatic.textContent='Sorpréndeme · cambiar de colección en cada opción';automatic.onclick=()=>chooseCollection('');libraryPanel.querySelector('.collectionGrid').before(automatic);
-  for(const family of catalog.families){
-    const card=document.createElement('button');card.type='button';card.className='collectionCard';card.dataset.collection=family.id;card.setAttribute('aria-label',family.name);card.onclick=()=>chooseCollection(family.id);
-    const diagram=document.createElement('span');diagram.className='collectionDiagram';diagram.setAttribute('aria-hidden','true');diagram.style.background=family.background?.startsWith('#')?family.background:family.id==='color_editorial'?'#6e282d':'#e5e4de';
-    const v=family.variants.find(v=>v.pageSpan===1)||family.variants[0];
-    for(const slot of v.slots.filter(slot=>!slot.pageIndex)){const box=document.createElement('span');box.style.cssText=`left:${slot.x*100}%;top:${slot.y*100}%;width:${slot.w*100}%;height:${slot.h*100}%;transform:rotate(${slot.rotation||0}deg);background:${engine.captionInk(diagram.style.background)==='#222222'?'#868781':'#b7b6af'}`;diagram.append(box)}
-    const title=document.createElement('strong');title.textContent=family.name;const desc=document.createElement('small');desc.textContent=family.description;
-    card.append(diagram,title,desc);libraryPanel.querySelector('.collectionGrid').append(card);
-  }
-  browse.onclick=()=>{if(browse.disabled)return;const bg=FramePhotoColors.resolve(S.frameBackground,S.photos,S.frameBackgroundColor);library.querySelectorAll('.collectionDiagram').forEach(diagram=>{diagram.style.background=bg;diagram.querySelectorAll('span').forEach(slot=>slot.style.background=FramePhotoColors.ink(bg)==='#222222'?'#656661':'#b7b6af')});libraryFocus=document.activeElement;libraryOverflow=document.body.style.overflow;library.querySelectorAll('[data-collection]').forEach(card=>card.setAttribute('aria-pressed',String(card.dataset.collection===(S.frameTemplateFamily||S.frameArtDirection))));library.hidden=false;document.body.style.overflow='hidden';close.focus()};
-  document.addEventListener('frame:import-phase',e=>{browse.disabled=e.detail.phase!=='idle';if(browse.disabled)closeLibrary()});
+  browse.textContent='Cambiar template';
+  browse.onclick=async()=>{
+    if(browse.disabled||!S.photos.length)return;
+    const choice=await FrameJourney.choose(S.photos);
+    if(!choice)return;
+    pushHistory();S.frameTemplateFamily=choice.familyId;S.frameBrief=choice;
+    S.frameLocation=FramePhotoLocation.settings(choice,S.photos);
+    buildStory();renderAll();saveProject();
+  };
+  document.addEventListener('frame:import-phase',e=>{browse.disabled=e.detail.phase!=='idle'});
   const supportsCaption = id => [...(catalog.families.find(f=>f.id===id)?.variants||[]),...(catalog.families.find(f=>f.id===id)?.covers||[])].some(v=>v.captionRegion);
   function sync() {
     const loc=S.frameLocation;
