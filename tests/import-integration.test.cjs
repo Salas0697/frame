@@ -23,6 +23,8 @@ function boot(entry='index.html', storageFailure=false) {
   w.URL.createObjectURL=file=>`blob:${file.name}-${file.size}`;
   w.URL.revokeObjectURL=()=>{};
   w.console.warn=()=>{};
+  w.Image=class {set src(value){this.naturalWidth=900;this.naturalHeight=1200;queueMicrotask(()=>this.onload?.())}};
+  w.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},getImageData(){return {data:new Uint8ClampedArray([80,105,140,255])}}});
   const observers=[], Observer=w.MutationObserver;
   w.MutationObserver=class extends Observer {constructor(callback){super(callback);observers.push(this)}};
   if(storageFailure){Object.defineProperty(w,'localStorage',{get(){throw Error('storage blocked')}})}
@@ -49,12 +51,13 @@ function boot(entry='index.html', storageFailure=false) {
     input.dispatchEvent(new w.Event('input',{bubbles:true}));
     input.dispatchEvent(new w.Event('change',{bubbles:true}));
   };
-  async function complete(button='#briefGo') {
+  async function complete(button='#journeyCreate') {
     const done=new Promise(resolve=>{
       const handler=e=>{if(e.detail.phase==='idle'){d.removeEventListener('frame:import-phase',handler);resolve()}};
       d.addEventListener('frame:import-phase',handler);
     });
-    d.querySelector(button).click();await done;
+    for(let i=0;i<200&&d.querySelector(button).disabled;i++)await new Promise(r=>setTimeout(r,5));
+    assert.equal(d.querySelector(button).disabled,false);d.querySelector(button).click();await done;
   }
   const close=()=>{observers.forEach(observer=>observer.disconnect());dom.window.close();assert.deepEqual(errors,[],'no uncaught application errors')};
   return {w,d,dom,controller,input,phases,listeners,select,complete,batches,close,calls:()=>calls,picked:()=>picked};
@@ -83,52 +86,51 @@ for(const count of [8,10,12])test(`DOM integration with ${count} files: brief, s
     assert.deepEqual(h.listeners.filter(l=>l.type==='change'),[{id:'photosInput',type:'change',capture:false}]);
     assert.equal(h.input.onchange,null,'no base HTML onchange can compete');
     h.d.querySelector('#fastAdd').click();assert.equal(h.picked(),1);
-    assert.ok(!h.d.querySelector('#frameBrief').classList.contains('on'));
+    assert.ok(!h.d.querySelector('#templateJourney').hidden === false);
     const selected=batch(count);
     h.select(selected);
-    const modal=h.d.querySelector('#frameBrief');
-    assert.ok(modal.classList.contains('on'),'shown synchronously on change');
-    assert.equal(modal.dataset.photoCount,String(count));
+    const modal=h.d.querySelector('#templateJourney');
+    assert.ok(modal.hidden === false,'shown synchronously on change');
+
     assert.equal(h.calls(),0);
     assert.equal(h.w.__test.state().photos.length,0);
     assert.equal(h.d.querySelector('#loading').className,'loading');
-    h.d.querySelector('[data-key=purpose] [data-v=impact]').click();
-    h.d.querySelector('[data-key=vibe] [data-v=natural]').click();
+
     await h.complete();
     assert.equal(h.calls(),1);
     selected.forEach((file,i)=>assert.equal(h.batches[0][i],file));
-    assert.equal(h.w.__test.state().frameBrief.purpose,'impact');
+    assert.equal(h.w.__test.state().frameBrief.purpose,'story');
     assert.equal(h.w.__test.state().photos.length,count);
     assert.ok(h.d.querySelectorAll('#stage .slide').length>0);
     const used=new Set([...h.d.querySelectorAll('#stage img')].map(img=>img.getAttribute('src')));
     selected.forEach(file=>assert.ok(used.has(`blob:${file.name}`),file.name));
-    assert.equal(h.d.querySelector('#frameBrief'),modal,'renderAll preserves modal identity');
-    assert.deepEqual(h.phases,['selecting','brief','analysis','commit','storyboard','render','complete','idle']);
+    assert.equal(h.d.querySelector('#templateJourney'),modal,'renderAll preserves modal identity');
+    assert.deepEqual(h.phases,['selecting','templates','analysis','commit','storyboard','render','complete','idle']);
     const beforeSlides=h.w.__test.state().slides;
     h.d.querySelector('#fastNewDesign').click();
     await new Promise(resolve=>h.w.requestAnimationFrame(resolve));
     assert.notEqual(h.w.__test.state().slides,beforeSlides);
     assert.equal(h.calls(),1,'variation never reanalyzes photos');
-    assert.ok(!modal.classList.contains('on'),'variation never asks again');
+    assert.ok(!modal.hidden === false,'variation never asks again');
     await new Promise(resolve=>setTimeout(resolve,220)); // the UI releases its existing variation lock after 180 ms
     h.d.querySelector('#fastAdd').click();assert.equal(h.picked(),2);
-    h.select(batch(2,count));assert.ok(modal.classList.contains('on'));
-    await h.complete('#briefSurprise');
+    h.select(batch(2,count));assert.ok(modal.hidden === false);
+    await h.complete('#journeySurprise');
     assert.equal(h.w.__test.state().photos.length,count+2);
-    assert.equal(h.w.__test.state().frameBrief.purpose,'surprise');
+    assert.equal(h.w.__test.state().frameBrief.purpose,'story');
     assert.equal(h.calls(),2);
     const beforeCancel=JSON.stringify(h.w.__test.state());
     h.d.querySelector('#fastAdd').click();
     h.input.dispatchEvent(new h.w.Event('cancel'));
     assert.equal(JSON.stringify(h.w.__test.state()),beforeCancel);
-    assert.ok(!modal.classList.contains('on'));
+    assert.ok(!modal.hidden === false);
     assert.equal(h.calls(),2);
   }finally{h.close()}
 });
 
 test('unavailable localStorage cannot prevent the brief from being installed',()=>{
   const h=boot('index.html',true);
-  try{h.select(batch(8));assert.ok(h.d.querySelector('#frameBrief').classList.contains('on'));assert.equal(h.calls(),0)}
+  try{h.select(batch(8));assert.ok(h.d.querySelector('#templateJourney').hidden === false);assert.equal(h.calls(),0)}
   finally{h.close()}
 });
 
@@ -152,7 +154,7 @@ test('template selector and caption use analyzed photos and survive persistence'
     assert.ok(records.some(r=>r?.frameTemplateFamily==='museum_notes'&&r.frameCaption===note.value));
     h.d.querySelector('#fastNewDesign').click();await new Promise(r=>h.w.requestAnimationFrame(r));
     assert.equal(h.calls(),1);assert.equal(s.frameArtDirection,'museum_notes');
-    assert.ok(!h.d.querySelector('#frameBrief').classList.contains('on'));
+    assert.ok(!h.d.querySelector('#templateJourney').hidden === false);
     assert.equal(s.slides.flatMap(sl=>sl.layers).filter(l=>l.frameCaption).length,1);
     await new Promise(resolve=>setTimeout(resolve,220));
     h.select(batch(2,12));assert.equal(select.disabled,true);

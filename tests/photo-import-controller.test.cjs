@@ -11,7 +11,7 @@ function setup(overrides={}) {
   const ports={
     input,
     setBusy:busy=>{input.disabled=busy},
-    requestBrief:selected=>{events.push(['brief',selected]);return answer.promise},
+    requestTemplate:selected=>{events.push(['templates',selected]);return answer.promise},
     showProgress:()=>{}, hideProgress:()=>{}, yieldToPaint:async()=>{},
     analyzePhotos:async selected=>{events.push(['analysis',selected]);return selected.map((f,i)=>({id:f.name,url:`blob:${i}`}))},
     checkpoint:()=>({...state}),
@@ -33,7 +33,7 @@ for (const count of [8,10,12]) test(`${count} original Files stay pending; analy
   h.controller.selectPhotos();
   assert.deepEqual(h.events,['picker']);
   const run=h.controller.filesSelected(selected);
-  assert.equal(h.controller.phase,'brief');
+  assert.equal(h.controller.phase,'templates');
   assert.equal(h.input.disabled,true);
   assert.equal(h.events.length,2);
   assert.equal(h.state.photos.length,0);
@@ -42,7 +42,7 @@ for (const count of [8,10,12]) test(`${count} original Files stay pending; analy
   assert.equal(h.events.length,2,'no analysis, save or storyboard before answering');
   h.answer.resolve({purpose:'story',vibe:'natural',density:'balanced'});
   assert.equal(await run,true);
-  assert.deepEqual(h.events.map(e=>Array.isArray(e)?e[0]:e),['picker','brief','analysis','commit','storyboard','render','persist','success']);
+  assert.deepEqual(h.events.map(e=>Array.isArray(e)?e[0]:e),['picker','templates','analysis','commit','storyboard','render','persist','success']);
   const analyzed=h.events.find(e=>e[0]==='analysis')[1];
   const stored=h.events.find(e=>e[0]==='persist');
   selected.forEach((file,i)=>{assert.equal(analyzed[i],file);assert.equal(stored[1][i],file);assert.equal(stored[2][i].id,file.name)});
@@ -73,7 +73,7 @@ test('additional import retains the previous batch and asks only once per batch'
   await h.controller.filesSelected(files(2,10));
   assert.deepEqual(h.state.photos.slice(0,10),first);
   assert.equal(h.state.photos.length,12);
-  assert.equal(h.events.filter(e=>e[0]==='brief').length,2);
+  assert.equal(h.events.filter(e=>e[0]==='templates').length,2);
 });
 
 test('cancelling the picker or an empty change leaves the project untouched',async()=>{

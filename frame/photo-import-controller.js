@@ -43,9 +43,9 @@ class PhotoImportController {
     let checkpoint;
     try {
       this.ports.setBusy(true);
-      this.transition('brief');
-      // requestBrief mounts/shows synchronously, before this first await.
-      const brief = await this.ports.requestBrief(files);
+      this.transition('templates');
+      // The template chooser mounts synchronously and retains File references.
+      const brief = await this.ports.requestTemplate(files);
       if (!brief) return false;
       this.transition('analysis');
       this.ports.showProgress('Analizando tus fotos…');
