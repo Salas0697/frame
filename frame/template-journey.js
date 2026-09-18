@@ -23,7 +23,7 @@ const FrameJourney = (() => {
   }
   q('journeyCancel').onclick=()=>finish(null);
   q('journeyCreate').onclick=()=>{if(session?.selected)finish(answers(session.selected))};
-  q('journeySurprise').onclick=()=>{if(session?.ranked?.length){const rows=session.ranked.slice(0,4);finish(answers(rows[Math.floor(Math.random()*rows.length)].id))}};
+  q('journeySurprise').onclick=()=>{if(session?.ranked?.length){const rows=session.cuts?session.ranked.filter(f=>f.cutStyle):session.ranked.slice(0,4);finish(answers(rows[Math.floor(Math.random()*rows.length)].id))}};
   q('journeyMore').onclick=()=>{if(session){session.all=session.cuts?false:!session.all;session.cuts=false;renderCards(session)}};
   q('journeyCuts').onclick=()=>{if(session?.ranked){session.cuts=!session.cuts;session.all=false;renderCards(session)}};
   modal.addEventListener('keydown',event=>{
@@ -50,6 +50,7 @@ const FrameJourney = (() => {
     q('journeyCards').replaceChildren();
     q('journeyCuts').setAttribute('aria-pressed',String(!!current.cuts));
     const rows=current.cuts?current.ranked.filter(f=>f.cutStyle):current.all?current.ranked:current.ranked.slice(0,4);
+    if(!rows.some(f=>f.id===current.selected))current.selected=rows[0].id;
     for(const [index,family] of rows.entries()){
       const card=document.createElement('button');card.type='button';card.className='journeyTemplate';card.dataset.family=family.id;
       card.setAttribute('aria-pressed',String(current.selected===family.id));card.setAttribute('aria-label',family.name);

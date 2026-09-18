@@ -3,7 +3,7 @@ const families=['torn_atelier','torn_horizon','cut_diagonal','cut_mosaic'];
 test('new cut series previews, creates, exports real masks, varies and restores',async({page})=>{
  const dir=path.resolve('test-results/cut-fixtures');await fs.mkdir(dir,{recursive:true});const files=[];for(let i=0;i<8;i++){const file=path.join(dir,i+'.png');await fs.writeFile(file,png([220,40,50],[220,40,50]));files.push(file)}
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');const picker=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await picker).setFiles(files);await expect(page.locator('#journeyCreate')).toBeEnabled();
- await page.locator('#journeyCuts').click();await expect(page.locator('.journeyTemplate')).toHaveCount(4);expect(await page.locator('.journeyPage img').first().evaluate(e=>e.style.clipPath)).toContain('polygon');
+ await page.locator('#journeyCuts').click();await expect(page.locator('.journeyTemplate')).toHaveCount(4);await expect(page.locator('.journeyTemplate[aria-pressed=true]')).toHaveCount(1);expect(await page.locator('.journeyPage img').first().evaluate(e=>e.style.clipPath)).toContain('polygon');
  await page.locator('[data-family=torn_atelier]').click();await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
  await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#frameBackground').selectOption('black');
  for(const family of families){
