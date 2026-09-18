@@ -220,6 +220,18 @@
           }
         }
         if(frameTreatment==='fine')sl.layers.filter(l=>l.type==='img').forEach(l=>{l.frameBorder=.55;l.frameBorderColor=bg==='#101012'||bg==='#161616'?'#eeeeee':'#202020'});
+        if(family.cutStyle){
+          for(const l of sl.layers.filter(l=>l.type==='img')){
+            const cut={kind:family.cutStyle,seed:(seed+serial++*7919)>>>0};
+            // The backing owns the torn silhouette; leave a narrow visible paper lip.
+            sl.layers.push({id:uid(),type:'deco',kind:'frame',x:l.x,y:l.y,w:l.w,h:l.h,rot:l.rot,z:l.z-.25,color:'#f2eee5',frameCut:cut,cutPaper:true,hidden:false,locked:true});
+            const k=.972;l.x+=l.w*(1-k)/2;l.y+=l.h*(1-k)/2;l.w*=k;l.h*=k;
+            const u=union(l.photo),c=crop(l.photo,l.w,l.h),margin=['diagonal','notch'].includes(cut.kind)?.18:.03;
+            const safe=!u||(u.x>=c.visible.x+margin*c.visible.w&&u.y>=c.visible.y+margin*c.visible.h&&u.x+u.w<=c.visible.x+(1-margin)*c.visible.w&&u.y+u.h<=c.visible.y+(1-margin)*c.visible.h);
+            // If an edge could cross a face, cut only the paper, preserving the photo.
+            if(safe)l.frameCut=cut;
+          }
+        }
         sl.layers.filter(l=>l.frameCaption).forEach(l=>{l.color=captionInk(bg)});
       }
       const sig=signature(slides);

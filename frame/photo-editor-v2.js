@@ -8,7 +8,7 @@
  function paint(){
   if(!edit)return;const area=frame.parentElement,r=edit.draft.w/edit.draft.h;
   const aw=area.clientWidth||300,ah=Math.max(1,(area.clientHeight||350)-24),w=Math.max(1,Math.min(aw-24,ah*r)),h=w/r;
-  frame.style.width=w+'px';frame.style.height=h+'px';frame.style.background=edit.bg;
+  frame.style.width=w+'px';frame.style.height=h+'px';frame.style.background=edit.bg;frame.style.clipPath=FrameCuts.css(edit.draft.frameCut);
   const g=FrameCrop.geometry(edit.draft,w,h);Object.assign(im.style,{width:g.w+'px',height:g.h+'px',left:g.x+'px',top:g.y+'px'});
   zr.value=edit.draft.zoom;$('#peZoomVal').textContent=Number(edit.draft.zoom).toFixed(2)+'×';
   $('#peContain').setAttribute('aria-pressed',String(edit.draft.fit==='contain'));$('#peCover').setAttribute('aria-pressed',String(edit.draft.fit!=='contain'));
