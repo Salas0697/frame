@@ -22,3 +22,12 @@ test('new cut series previews, creates, exports real masks, varies and restores'
  }
  const before=await page.evaluate(()=>S.slides.map(s=>s.layers.map(l=>l.frameCut||null)));await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);expect(await page.evaluate(()=>S.slides.map(s=>s.layers.map(l=>l.frameCut||null)))).toEqual(before);expect(errors).toEqual([]);
 });
+test('photographic previews show the four new visual families',async({page})=>{
+ const dir=path.resolve('test-results/cut-photos');await fs.mkdir(dir,{recursive:true});const files=[];
+ for(const id of [10,20,24,28,42,43,47,49]){const r=await fetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error('Fixture unavailable');const f=path.join(dir,id+'.jpg');await fs.writeFile(f,Buffer.from(await r.arrayBuffer()));files.push(f)}
+ await page.goto('/');const picker=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await picker).setFiles(files);await expect(page.locator('#journeyCreate')).toBeEnabled();await page.locator('#journeyCuts').click();await expect(page.locator('.journeyTemplate')).toHaveCount(4);
+ await page.screenshot({path:'test-results/cuts-photographic-library-'+test.info().project.name+'.png',fullPage:true});
+ await page.locator('[data-family=cut_diagonal]').click();await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
+ const photo=page.locator('#stage .slide').first().locator('.imgLayer').first();await photo.click();await page.locator('#uxEdit').click();await expect(page.locator('#photoEditV2')).toBeVisible();expect(await page.locator('#peFrame').evaluate(e=>e.style.clipPath)).toContain('polygon');await page.locator('#peCancel').click();
+ await page.screenshot({path:'test-results/cuts-photographic-editor-'+test.info().project.name+'.png'});
+});
