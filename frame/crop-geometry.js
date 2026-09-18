@@ -16,6 +16,7 @@
   function imageElement(l,w,h){
     const box=document.createElement('div');box.className='photoClip';
     Object.assign(box.style,{position:'absolute',overflow:'hidden',width:w+'px',height:h+'px',transform:'rotate('+(l.rot||0)+'deg)'});
+    if(l.frameCut)box.style.clipPath=FrameCuts.css(l.frameCut);
     if(l.frameBorder)box.style.outline=l.frameBorder*(w/l.w)+'px solid '+(l.frameBorderColor||'#161616');
     const im=document.createElement('img'),g=geometry(l,w,h);im.src=l.photo.url;im.alt=l.photo.name||'Foto seleccionada';im.draggable=false;
     Object.assign(im.style,{position:'absolute',maxWidth:'none',maxHeight:'none',width:g.w+'px',height:g.h+'px',left:g.x+'px',top:g.y+'px',objectFit:'fill'});
