@@ -31,6 +31,26 @@ de prueba se descargan bajo `.qa/photos/` y se reutilizan; un fallo de descarga
 hace fallar la prueba. Capturas, trazas e informe HTML quedan en `test-results/`
 y `playwright-report/`.
 
+## Biblioteca y diversidad
+
+26 colecciones originales, 116 variantes y 60 portadas. Buscar por nombre o estilo
+en la biblioteca. Nuevas miradas: Bauhaus, Margen, Archivo Apilado, Neón,
+Blueprint, Lino, Correspondencia y Cinta. Las cuatro familias de cortes tienen
+portadas propias; Museum Notes conserva la retícula de referencia de nueve fotos.
+
+La comparación usa rectángulos finales después de ajustar las fotos, sin IDs ni
+orden de imágenes. Penaliza composiciones recientes y repetidas dentro del álbum;
+si hace falta, cambia escala y posición con una transformación uniforme que
+conserva el recorte. El historial guarda hasta 32 geometrías recientes. Las
+panorámicas continuas y las páginas fijadas conservan su relación intencional.
+
+«De la colección» usa el fondo de cada identidad. «Desde tus fotos» sigue usando
+colores medidos; blanco, negro y color elegido conservan la elección explícita.
+El arte gráfico se genera como capas nativas: selección, editor, miniaturas,
+comparación, copia .frame y PNG utilizan la misma composición. No se inventan
+leyendas, fechas ni lugares. La prueba de diversidad genera una lámina con los
+PNG reales de las 26 colecciones y comprueba cobertura y geometría.
+
 ## Arquitectura vigente
 
 | Responsabilidad | Fuente |
@@ -38,7 +58,7 @@ y `playwright-report/`.
 | Estado e historial compartido | `frame/project-state.js` |
 | Eventos de renderizado y guardado | `frame/lifecycle.js` |
 | Importación y original persistido | `frame/photo-import-controller.js`, `frame/photo-store.js` |
-| Composición y catálogo | `frame/template-engine.js`, `frame/template-catalog.json` |
+| Composición y catálogo | `frame/template-engine.js`, `frame/template-style.js`, `frame/template-catalog.json` |
 | Análisis de rostro y adaptación de coordenadas | `frame/photo-analysis.js`, `frame/face-geometry.js` |
 | Acabados y recuperación de entrega | `frame/finish.js`, `frame/export-delivery.js` |
 | EXIF y nota de locación | `frame/photo-location.js` |

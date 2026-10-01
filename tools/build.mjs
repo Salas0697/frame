@@ -21,7 +21,7 @@ if (!core) throw new Error('Missing core script');
 const modules = [
   'cut-geometry.js', 'crop-geometry.js', 'photo-colors.js', 'photo-store.js', 'photo-import-controller.js', 'photo-location.js', 'face-geometry.js', 'photo-analysis.js',
   'interaction-v1.js', 'speed-v1.js',
-  'ux-rescue-v1.js', 'template-engine.js', 'template-journey.js', 'storyboard-v1.js', 'photo-editor-v2.js', 'album-workspace.js'
+  'ux-rescue-v1.js', 'template-style.js', 'template-engine.js', 'template-journey.js', 'storyboard-v1.js', 'photo-editor-v2.js', 'album-workspace.js'
 ];
 const scripts = await Promise.all(modules.map(name => readFile(path.join(root, 'frame', name), 'utf8')));
 // A single content-addressed file keeps core, listeners and UI on the same revision.

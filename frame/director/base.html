@@ -154,7 +154,7 @@ async function renderExportPage(i,sl,finish){
       x.save();x.translate(l.x*sc,l.y*sc);x.rotate((l.rot||0)*Math.PI/180);x.fillStyle=l.color;x.font=`${l.weight} ${Math.round(l.size*sc)}px ${ff(l.font)}`;x.textBaseline='top';
       if(l.frameCaption||l.frameLocation)l.text.split('\n').forEach((line,j)=>x.fillText(line,0,j*l.size*sc*.9));else wrapText(x,l.text,0,0,l.w*sc,l.size*sc*.9);x.restore();
       }
-      if(l.type==='deco'){x.save();x.translate((l.x+l.w/2)*sc,(l.y+l.h/2)*sc);x.rotate((l.rot||0)*Math.PI/180);x.fillStyle=l.color;if(l.kind==='circle'){x.beginPath();x.arc(0,0,l.w*sc/2,0,Math.PI*2);x.fill()}else if(l.frameCut){FrameCuts.path(x,l.frameCut,-l.w*sc/2,-l.h*sc/2,l.w*sc,l.h*sc);x.fill()}else{x.fillRect(-l.w*sc/2,-l.h*sc/2,l.w*sc,l.h*sc)}x.restore()}
+      if(l.type==='deco'){x.save();x.translate((l.x+l.w/2)*sc,(l.y+l.h/2)*sc);x.rotate((l.rot||0)*Math.PI/180);x.fillStyle=l.color;if(l.kind==='circle'){x.beginPath();x.ellipse(0,0,l.w*sc/2,l.h*sc/2,0,0,Math.PI*2);x.fill()}else if(l.frameCut){FrameCuts.path(x,l.frameCut,-l.w*sc/2,-l.h*sc/2,l.w*sc,l.h*sc);x.fill()}else{x.fillRect(-l.w*sc/2,-l.h*sc/2,l.w*sc,l.h*sc)}x.restore()}
     }
     if(finish!=='clean')x.putImageData(FrameFinish.apply(x.getImageData(0,0,W,H),finish),0,0);
     if(x.isContextLost?.())throw new Error('Export canvas lost');
