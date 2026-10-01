@@ -7,7 +7,11 @@ test('expanded library is searchable and produces distinct real-photo frames wit
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await upload(page);
  await page.locator('#browseCollections').click();await page.locator('#journeySearch').fill('neon');await expect(page.locator('.journeyTemplate')).toHaveCount(1);await expect(page.locator('[data-family=neon_stage]')).toBeVisible();
  await page.locator('#journeySearch').fill('zz-no-results');await expect(page.locator('#journeyCreate')).toBeDisabled();await expect(page.locator('#journeyChoice')).toContainText('No hay');
- await page.locator('#journeySearch').fill('');await page.locator('#journeyMore').click();await expect(page.locator('.journeyTemplate')).toHaveCount(catalog.families.length);await page.locator('#journeyCancel').click();
+ await page.locator('#journeySearch').fill('');await page.locator('#journeyMore').click();await expect(page.locator('.journeyTemplate')).toHaveCount(catalog.families.length);
+ const lastVisible=await page.locator('.journeyTemplate').last().getAttribute('data-family');
+ await page.evaluate(()=>{window.qaRandom=Math.random;Math.random=()=>.9999});
+ await page.locator('#journeySurprise').click();await expect(page.locator('#templateJourney')).toBeHidden();
+ await page.evaluate(()=>{Math.random=window.qaRandom;delete window.qaRandom});await expect(page.locator('#templateFamily')).toHaveValue(lastVisible);
  await page.evaluate(()=>{S.frameBackground='collection';S.frameLastDesign=null;window.visualSamples=[]});
  for(const family of catalog.families){
   await page.locator('#templateFamily').selectOption(family.id);

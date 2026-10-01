@@ -26,7 +26,7 @@ const FrameJourney = (() => {
   }
   q('journeyCancel').onclick=()=>finish(null);
   q('journeyCreate').onclick=()=>{if(session?.selected)finish(answers(session.selected))};
-  q('journeySurprise').onclick=()=>{if(session?.ranked?.length){const rows=session.search?session.ranked.filter(f=>searchable(f.name+' '+f.description).includes(searchable(session.search))):session.cuts?session.ranked.filter(f=>f.cutStyle):session.ranked.slice(0,4);finish(answers(rows[Math.floor(Math.random()*rows.length)].id))}};
+  q('journeySurprise').onclick=()=>{if(session?.ranked?.length){const rows=session.search?session.ranked.filter(f=>searchable(f.name+' '+f.description).includes(searchable(session.search))):session.cuts?session.ranked.filter(f=>f.cutStyle):session.all?session.ranked:session.ranked.slice(0,4);finish(answers(rows[Math.floor(Math.random()*rows.length)].id))}};
   q('journeyMore').onclick=()=>{if(session){search.value='';session.search='';session.all=session.cuts?false:!session.all;session.cuts=false;renderCards(session)}};
   q('journeyCuts').onclick=()=>{if(session?.ranked){search.value='';session.search='';session.cuts=!session.cuts;session.all=false;renderCards(session)}};
   modal.addEventListener('keydown',event=>{
