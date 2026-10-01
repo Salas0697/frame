@@ -41,3 +41,12 @@ test('collection backgrounds restore the family identity and explicit measured/c
  project.slides.forEach(sl=>assert.equal(sl.bg,colors.resolve('collection',project.photos,null,catalog.families.find(f=>f.id===sl.frameFamily))));
  colors.apply(project,{scope:'all',mode:'custom',color:'#ab1256'});assert.ok(project.slides.every(s=>s.bg==='#ab1256'));
 });
+test('large fitted group photos stay inside the canvas when repeated geometry forces variation',()=>{
+ for(const seed of [1,14,42]){
+  const photos=source(36,.8).map(p=>({...p,faceCount:4}));
+  const result=engine.generate({catalog,photos,familyId:'full_bleed',seed});
+  const images=result.slides.flatMap(s=>s.layers.filter(l=>l.type==='img'));
+  assert.equal(images.length,photos.length);
+  images.forEach(l=>{assert.ok(l.x>=0&&l.y>=0&&l.x+l.w<=340&&l.y+l.h<=425,'fitted source escaped the frame');assert.ok(Math.abs(l.w/l.h-.8)<1e-9)});
+ }
+});

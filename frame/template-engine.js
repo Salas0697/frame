@@ -144,7 +144,8 @@
         const old=imgs.map(l=>({...l}));let best,merit=-1;
         // A uniform transform preserves every source crop, face and inter-image gap.
         for(let i=0;i<24;i++){
-          const k=(sl.frameHero?.83:.68)+random()*(sl.frameHero?.13:.28),tx=17+random()*Math.max(0,W-34-w*k),ty=21+random()*Math.max(0,H*.87-42-h*k);
+          const ceiling=Math.min(.96,(W-34)/w,(H*.87-42)/h),floor=Math.min(sl.frameHero ? .83 : .68,ceiling*.8);
+          const k=floor+random()*(ceiling-floor),tx=17+random()*Math.max(0,W-34-w*k),ty=21+random()*Math.max(0,H*.87-42-h*k);
           imgs.forEach((l,j)=>{l.x=tx+(old[j].x-x)*k;l.y=ty+(old[j].y-y)*k;l.w=old[j].w*k;l.h=old[j].h*k});
           const g=geometry(sl),d=Math.min(...memory.map(other=>distance(g,other)));
           if(d>merit){merit=d;best=imgs.map(l=>({x:l.x,y:l.y,w:l.w,h:l.h}))}
