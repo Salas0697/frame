@@ -50,10 +50,10 @@
     for (const {s, i} of order) {
       const ranked = free.map(p => {
         let slot = s, c = crop(p, s.w * W, s.h * H);
-        if (variant.photoCount === 1 && !(variant.id.startsWith('bleed_') && c.safe && c.retained >= .68)) { slot = fittedSlot(s, p); c = crop(p, slot.w * W, slot.h * H); }
+        if (p.faceAnalysisStatus==='unavailable' || (variant.photoCount === 1 && !(variant.id.startsWith('bleed_') && c.safe && c.retained >= .68))) { slot = fittedSlot(s, p); c = crop(p, slot.w * W, slot.h * H); }
         const count = p.faceCount || faces(p).length, area = slot.w * slot.h;
         const dense = variant.photoCount > 1;
-        const safe = c.safe && !(dense && count >= 3 && area < .28) && !(dense && count >= 2 && area < .14) && !(allowOverlap && count);
+        const safe = c.safe && !(dense && count >= 3 && area < .28) && !(dense && count >= 2 && area < .14) && !(allowOverlap && (count || p.faceAnalysisStatus==='unavailable'));
         // Image variance may be in thousands. It must never override crop safety.
         const quality = Math.log1p(Math.max(0, Number(p.score) || 0)) / 4;
         return {p, slot, c, safe, score: c.retained * 16 + Math.min(quality, 4) + random() * 9};
@@ -65,6 +65,7 @@
     return {assigned, fit: fit / assigned.length};
   }
   function canSpread(p, span) {
+    if (p.faceAnalysisStatus==='unavailable') return false;
     if (aspect(p) < span * .8 * .8) return false;
     const c = crop(p, W * span, H);
     if (!c.safe) return false;
@@ -138,7 +139,7 @@
         const cover=(freshCovers.length?freshCovers:covers)[attempt % (freshCovers.length||covers.length)];
         const box=cover.slots[0];
         const fit=crop(hero,box.w*W,box.h*H);
-        const slot=fit.safe && fit.retained>.82 ? box : fittedSlot(box,hero);
+        const slot=hero.faceAnalysisStatus!=='unavailable' && fit.safe && fit.retained>.82 ? box : fittedSlot(box,hero);
         const c=crop(hero,slot.w*W,slot.h*H),sl=page(cover.id);
         sl.layers.push(layer(hero,slot,c));sl.frameHero=true;
         if(cover.captionRegion)sl.frameCaptionRegion={...cover.captionRegion};
@@ -227,7 +228,7 @@
             sl.layers.push({id:uid(),type:'deco',kind:'frame',x:l.x,y:l.y,w:l.w,h:l.h,rot:l.rot,z:l.z-.25,color:'#f2eee5',frameCut:cut,cutPaper:true,hidden:false,locked:true});
             const k=.972;l.x+=l.w*(1-k)/2;l.y+=l.h*(1-k)/2;l.w*=k;l.h*=k;
             const u=union(l.photo),c=crop(l.photo,l.w,l.h),margin=['diagonal','notch'].includes(cut.kind)?.18:.03;
-            const safe=!u||(u.x>=c.visible.x+margin*c.visible.w&&u.y>=c.visible.y+margin*c.visible.h&&u.x+u.w<=c.visible.x+(1-margin)*c.visible.w&&u.y+u.h<=c.visible.y+(1-margin)*c.visible.h);
+            const safe=l.photo.faceAnalysisStatus!=='unavailable'&&(!u||(u.x>=c.visible.x+margin*c.visible.w&&u.y>=c.visible.y+margin*c.visible.h&&u.x+u.w<=c.visible.x+(1-margin)*c.visible.w&&u.y+u.h<=c.visible.y+(1-margin)*c.visible.h));
             // If an edge could cross a face, cut only the paper, preserving the photo.
             if(safe)l.frameCut=cut;
           }

@@ -13,20 +13,34 @@ const empty=document.createElement('div');empty.className='emptyQuick';empty.inn
 const photoInput=$('#photosInput');
 const undoAction=document.createElement('button');undoAction.className='fastToastAction';undoAction.textContent='Deshacer';document.body.appendChild(undoAction);
 let busy=false;
-function setBusy(on){busy=on;qb.classList.toggle('busy',on);const eb=$('#emptyAdd');if(eb)eb.disabled=on}
+function setBusy(on){busy=on;document.documentElement.dataset.projectBusy=String(on);qb.classList.toggle('busy',on);const eb=$('#emptyAdd');if(eb)eb.disabled=on}
 function fire(primary,fallback){const a=$(primary);if(a){a.click();return true}const b=fallback?$(fallback):null;if(b){b.click();return true}return false}
 function hideClutter(){const bar=$('#controlBar');if(bar)bar.classList.add('speedHidden');$('#randomBtn')?.classList.add('speedHidden');$('#slideBtn')?.classList.add('speedHidden')}
 function emptyState(){const isEmpty=!S.photos?.length||!S.slides?.length;studio?.classList.toggle('emptyStateFast',isEmpty);persistentExport.style.display=!isEmpty&&studio?.classList.contains('on')?'block':'none';empty.classList.toggle('on',isEmpty);if(isEmpty){const count=studio?.querySelector('.studioTop small');if(count)count.textContent='Nuevo proyecto'}return isEmpty}
 hideClutter();emptyState();
 function remember(){prefs.slides=S.slides?.length||prefs.slides;try{localStorage.setItem(PREF,JSON.stringify(prefs))}catch(e){console.warn('Preferences unavailable',e)}}
-function snapshot(){return clone({slides:S.slides,currentSlide:S.currentSlide,randomMode:S.randomMode,showSafe:S.showSafe,finish:S.finish,designDNA:S.designDNA,frameBrief:S.frameBrief,frameTemplateFamily:S.frameTemplateFamily||'',frameCaption:S.frameCaption||'',frameArtDirection:S.frameArtDirection||'',frameLastDesign:S.frameLastDesign||null,frameBackground:S.frameBackground||'auto',frameBackgroundColor:S.frameBackgroundColor||null,frameTreatment:S.frameTreatment||'gallery',heroPhotoId:S.heroPhotoId||null,frameLocation:S.frameLocation||null})}
-let quickUndo=null,undoTimer=null;function offerUndo(snap,label){quickUndo=snap;undoAction.classList.add('on');clearTimeout(undoTimer);undoTimer=setTimeout(()=>undoAction.classList.remove('on'),3000);toast(label)}undoAction.onclick=()=>{if(!quickUndo||busy)return;Object.assign(S,quickUndo);quickUndo=null;undoAction.classList.remove('on');renderAll();saveProject();toast('Deshecho')};
+let quickUndo=null,undoTimer=null;
+function offerUndo(label){quickUndo=S.history.at(-1);undoAction.classList.add('on');clearTimeout(undoTimer);undoTimer=setTimeout(()=>undoAction.classList.remove('on'),3000);toast(label)}
+undoAction.onclick=()=>{if(!quickUndo||busy)return;if(S.history.at(-1)===quickUndo){undo();toast('Deshecho')}quickUndo=null;undoAction.classList.remove('on')};
+FrameLifecycle.on('afterRender',()=>{if(quickUndo&&S.history.at(-1)!==quickUndo){quickUndo=null;undoAction.classList.remove('on')}});
 function startPhotoFlow(){if(!busy)window.framePhotoImport.selectPhotos()}
-$('#fastNewDesign').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow();return}const snap=snapshot();setBusy(true);requestAnimationFrame(()=>{try{if(typeof window.FRAME_rebuildStory==='function')window.FRAME_rebuildStory();else fire('#directorBtn','#randomBtn');remember();offerUndo(snap,'Otra opción lista')}finally{setTimeout(()=>setBusy(false),180)}})};
+$('#fastNewDesign').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow();return}setBusy(true);requestAnimationFrame(()=>{try{if(typeof window.FRAME_rebuildStory==='function')window.FRAME_rebuildStory();else fire('#directorBtn','#randomBtn');remember();offerUndo('Otra opción lista')}finally{setTimeout(()=>setBusy(false),180)}})};
 $('#fastExport').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow();return}openSheet('#exportSheet')};
 $('#fastAdd').onclick=startPhotoFlow;$('#emptyAdd').onclick=startPhotoFlow;
 const exportTool=$('#exportBtn');if(exportTool)exportTool.onclick=()=>{if(!busy&&!exportBusy)openSheet('#exportSheet')};
-const oldRenderAll=renderAll;renderAll=function(){emptyState();oldRenderAll()};const oldSave=saveProject;saveProject=function(){const saved=oldSave();remember();return saved};remember();
+FrameLifecycle.on('beforeRender',emptyState);FrameLifecycle.on('afterSave',remember);remember();
+const storageNotice=document.createElement('p');storageNotice.id='storageNotice';storageNotice.hidden=true;storageNotice.setAttribute('role','status');storageNotice.style.cssText='margin:0 16px 12px;padding:12px;border:1px solid #8c7050;border-radius:12px;color:#efd5b2;font-size:12px;line-height:1.5';storageNotice.innerHTML='<span>Este proyecto no está guardado en el dispositivo.</span><div class="storageActions"><button id="retrySaveBtn">Reintentar guardar</button><button id="backupNoticeBtn">Guardar copia</button></div>';qb.after(storageNotice);
+function syncStorageNotice(){storageNotice.hidden=S.storageReady!==false}
+window.FRAME_projectTask=async task=>{if(busy||exportBusy||window.framePhotoImport?.active)return;setBusy(true);try{return await task()}finally{setBusy(false)}};
+FrameLifecycle.on('afterRender',syncStorageNotice);FrameLifecycle.on('afterSave',syncStorageNotice);
+window.FRAME_newProject=async()=>{
+  if(busy||exportBusy||window.framePhotoImport?.active)return;
+  if(!confirm('¿Crear un proyecto nuevo? Se eliminarán las fotos guardadas de este proyecto en este dispositivo.'))return;
+  setBusy(true);let previous=null,removed=false;
+  try{previous=localStorage.getItem(SAVE_KEY);localStorage.removeItem(SAVE_KEY);removed=true;await FramePhotoStore.clear();S.photos.forEach(p=>URL.revokeObjectURL(p.url));location.reload()}
+  catch(error){if(removed&&previous)try{localStorage.setItem(SAVE_KEY,previous)}catch{}console.warn('Project reset failed',error);toast('No pude eliminar el proyecto guardado. Intenta de nuevo.')}
+  finally{setBusy(false)}
+};
 let persistenceWarning=false;
 function progress(message){const loading=$('#loading');loading.querySelector('b').textContent=message;loading.querySelector('span').textContent='';loading.classList.add('on')}
 function showStudio(){
@@ -42,17 +56,22 @@ window.framePhotoImport=new PhotoImportController({
   hideProgress:()=>{$('#loading').classList.remove('on');emptyState()},
   yieldToPaint:()=>new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0))),
   analyzePhotos:FramePhotoAnalysis.analyzePhotos,
-  checkpoint:()=>({state:{...S},studio:studio.classList.contains('on')}),
-  commitPhotos:(photos,answers)=>{S.photos=[...S.photos,...photos];S.frameBrief=answers;S.frameTemplateFamily=answers.familyId;S.frameLocation=FramePhotoLocation.settings(answers,S.photos);persistenceWarning=false},
+  checkpoint:()=>({state:clone(S),studio:studio.classList.contains('on')}),
+  commitPhotos:(photos,answers)=>{S.photos=[...S.photos,...photos];S.frameBrief=answers;S.frameTemplateFamily=answers.familyId;S.frameLocation=FramePhotoLocation.settings(answers,S.photos);persistenceWarning=false;S.storageReady=false},
   generateStoryboard:()=>buildSlides(),
   render:showStudio,
   persistPhotos:async(files,photos)=>{
-    try{await FramePhotoStore.put(files,photos)}catch(error){persistenceWarning=true;console.warn('Original photo storage failed',error)}
-    if(!saveProject())persistenceWarning=true;
+    try{
+      await FramePhotoStore.put(files,photos);
+      S.storageReady=true;
+      if(!saveProject({allowImport:true}))throw Error('Project metadata could not be saved');
+      // Discard orphan originals only after committing a restorable model.
+      try{await FramePhotoStore.prune(S.photos.map(photo=>photo.id))}catch(error){console.warn('Original cleanup will retry on the next save',error)}
+    }catch(error){persistenceWarning=true;S.storageReady=false;console.warn('Project storage failed',error)}
   },
   rollback:checkpoint=>{S=checkpoint.state;studio.classList.toggle('on',checkpoint.studio);$('#uploadScreen').classList.toggle('on',!checkpoint.studio);renderAll()},
   releasePhotos:photos=>photos.forEach(photo=>URL.revokeObjectURL(photo.url)),
-  onSuccess:count=>toast(persistenceWarning?'Fotos listas; no se pudo guardar en este dispositivo':`${count} fotos listas`),
+  onSuccess:count=>{syncStorageNotice();toast(persistenceWarning?'Fotos listas; no se pudo guardar en este dispositivo':`${count} fotos listas`)},
   onError:error=>{console.warn('Photo import failed',error);toast('No pude añadir esas fotos. Tu proyecto se conserva.')},
   onPhase:(phase,count)=>{
     document.documentElement.dataset.photoImportPhase=phase;
@@ -70,7 +89,7 @@ $('#resumeBtn').onclick=async()=>{
     if(!saved?.photos?.length||!Array.isArray(saved.slides))throw new Error('No saved project');
     await FramePhotoStore.restore(saved);
     await FramePhotoColors.ensure(saved.photos);
-    S=saved;showStudio();toast('Proyecto restaurado');
+    saved.storageReady=true;S=saved;showStudio();toast('Proyecto restaurado');
   }catch(error){S=previous;console.warn('Project restore failed',error);toast('No pude restaurar los originales guardados')}
   finally{$('#loading').classList.remove('on');photoInput.disabled=false;setBusy(false)}
 };

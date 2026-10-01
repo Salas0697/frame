@@ -1,7 +1,8 @@
+const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test');
 const path=require('node:path'),fs=require('node:fs/promises');
 const dir=path.resolve('test-results/journey-fixtures'),ids=[10,20,24,28,29,42,43,47];
-test.beforeAll(async()=>{await fs.mkdir(dir,{recursive:true});for(const id of ids){const r=await fetch('https://picsum.photos/id/'+id+'/900/1200');if(!r.ok)throw Error('Fixture unavailable');await fs.writeFile(path.join(dir,id+'.jpg'),Buffer.from(await r.arrayBuffer()))}});
+test.beforeAll(async()=>{test.setTimeout(240000);await fs.mkdir(dir,{recursive:true});for(const id of ids){const r=await fixtureFetch('https://picsum.photos/id/'+id+'/900/1200');if(!r.ok)throw Error('Fixture unavailable');await fs.writeFile(path.join(dir,id+'.jpg'),Buffer.from(await r.arrayBuffer()))}});
 async function pick(page,count,append=false){const pending=page.waitForEvent('filechooser');await page.locator(append?'#fastAdd':'#photosInput').click();await (await pending).setFiles(ids.slice(0,count).map(id=>path.join(dir,id+'.jpg')));await expect(page.locator('#templateJourney')).toBeVisible();await expect(page.locator('#journeyCreate')).toBeEnabled()}
 test('previews, cancel, append, export and restore',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');await pick(page,8);

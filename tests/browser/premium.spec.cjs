@@ -1,11 +1,13 @@
+const {openTools}=require('../support/editor.cjs');
+const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs/promises'),path=require('node:path');
 const ids=[10,20,24,28,29,42,43,47,48,49,50,54],dir=path.resolve('test-results/fixtures');
-test.beforeAll(async()=>{
+test.beforeAll(async()=>{test.setTimeout(240000);
  await fs.mkdir(dir,{recursive:true});
  for(const id of ids){
   const file=path.join(dir,'photo-'+id+'.jpg');try{await fs.access(file);continue}catch{}
-  const response=await fetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});
+  const response=await fixtureFetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});
   if(!response.ok)throw Error('Real image fixture download failed: '+id);
   const bytes=Buffer.from(await response.arrayBuffer());if(bytes[0]!==255||bytes[1]!==216)throw Error('Fixture is not JPEG');
   await fs.writeFile(file,bytes);
@@ -45,7 +47,7 @@ test('finishes, fixed page, crop transaction, cover, full miniatures and PNG exp
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');await upload(page,12);await page.locator('#templateFamily').selectOption('museum_notes');
  await expect(page.locator('#stage .slide[data-layout="museum_9"] .imgLayer')).toHaveCount(9);
- await page.getByText('Fondo y marco',{exact:true}).click();
+ await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();
  await page.locator('#frameBackground').selectOption('black');
  await page.locator('#frameTreatment').selectOption('fine');
  expect(await page.locator('#stage .slide').first().evaluate(e=>getComputedStyle(e).backgroundColor)).toBe('rgb(16, 16, 18)');
@@ -99,7 +101,7 @@ test('collection library opens, closes, selects all new families and exports bot
   await expect(page.locator('#stage .slide').first()).toHaveAttribute('data-family',family);
   await page.screenshot({path:'test-results/collection-'+family+'-'+test.info().project.name+'.png'});
  }
- await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#frameBackground').selectOption('auto');
+ await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#frameBackground').selectOption('auto');
  for(const treatment of ['print','darkroom']){
   await page.locator('#frameTreatment').selectOption(treatment);
   const exported=await page.evaluate(async()=>{const sl=S.slides[0],paper=sl.layers.find(l=>l.framePaper),file=await renderSlideToFile(0),im=await createImageBitmap(file),cv=document.createElement('canvas');cv.width=1080;cv.height=1350;const ctx=cv.getContext('2d');ctx.drawImage(im,0,0);const sc=1080/340,pixel=ctx.getImageData(Math.round((paper.x+paper.w/2)*sc),Math.round((paper.y+paper.h*.97)*sc),1,1).data;return {width:im.width,height:im.height,pixel:Array.from(pixel),color:paper.color}});

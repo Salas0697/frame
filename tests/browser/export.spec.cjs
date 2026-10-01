@@ -1,12 +1,14 @@
+const {openTools}=require('../support/editor.cjs');
+const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs/promises'),path=require('node:path');
 const {png}=require('../support/color-fixture.cjs');
 const dir=path.resolve('test-results/export-fixtures');
-test.beforeAll(async()=>{await fs.mkdir(dir,{recursive:true});for(let i=0;i<12;i++)await fs.writeFile(path.join(dir,i+'.png'),png([170+i*5,40+i*5,50],[30,150,200]))});
+test.beforeAll(async()=>{test.setTimeout(240000);await fs.mkdir(dir,{recursive:true});for(let i=0;i<12;i++)await fs.writeFile(path.join(dir,i+'.png'),png([170+i*5,40+i*5,50],[30,150,200]))});
 async function prepare(page){
  await page.goto('/');const picker=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await picker).setFiles(Array.from({length:12},(_,i)=>path.join(dir,i+'.png')));
  await expect(page.locator('#journeyCreate')).toBeEnabled();await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
- await page.locator('#templateFamily').selectOption('gallery_book');await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#backgroundSwatches button').last().click();
+ await page.locator('#templateFamily').selectOption('gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#backgroundSwatches button').last().click();
 }
 test('every exported photograph survives custom backgrounds and surfaces are released',async({page})=>{
  await prepare(page);
@@ -57,9 +59,9 @@ test('failed PNG encoding releases memory, reports failure and permits retry',as
 });
 test('twelve-megapixel photographs export as visible photographs on every page',async({page})=>{
  test.setTimeout(180000);
- const originals=[];for(const id of [10,20,28]){const name=path.join(dir,'real-'+id+'.jpg');const response=await fetch('https://picsum.photos/id/'+id+'/3024/4032',{signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Photo fixture unavailable');await fs.writeFile(name,Buffer.from(await response.arrayBuffer()));originals.push(name)}
+ const originals=[];for(const id of [10,20,28]){const name=path.join(dir,'real-'+id+'.jpg');const response=await fixtureFetch('https://picsum.photos/id/'+id+'/3024/4032',{signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Photo fixture unavailable');await fs.writeFile(name,Buffer.from(await response.arrayBuffer()));originals.push(name)}
  await page.goto('/');const picker=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await picker).setFiles(Array.from({length:9},(_,i)=>originals[i%3]));await expect(page.locator('#journeyCreate')).toBeEnabled();await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
- await page.locator('#templateFamily').selectOption('gallery_book');await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#backgroundSwatches button').last().click();
+ await page.locator('#templateFamily').selectOption('gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#backgroundSwatches button').last().click();
  const images=await page.evaluate(async()=>{
   const results=[];
   for(let i=0;i<S.slides.length;i++){
