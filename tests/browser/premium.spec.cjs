@@ -1,11 +1,12 @@
+const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test');
 const fs=require('node:fs/promises'),path=require('node:path');
 const ids=[10,20,24,28,29,42,43,47,48,49,50,54],dir=path.resolve('test-results/fixtures');
-test.beforeAll(async()=>{
+test.beforeAll(async()=>{test.setTimeout(240000);
  await fs.mkdir(dir,{recursive:true});
  for(const id of ids){
   const file=path.join(dir,'photo-'+id+'.jpg');try{await fs.access(file);continue}catch{}
-  const response=await fetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});
+  const response=await fixtureFetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});
   if(!response.ok)throw Error('Real image fixture download failed: '+id);
   const bytes=Buffer.from(await response.arrayBuffer());if(bytes[0]!==255||bytes[1]!==216)throw Error('Fixture is not JPEG');
   await fs.writeFile(file,bytes);

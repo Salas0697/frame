@@ -21,9 +21,19 @@
   }
   async function enrich(files,photos,progress,parser,load=catalog){
     const points=[];
-    for(let i=0;i<files.length;i++){progress?.(`Leyendo locaciones… ${i+1}/${files.length}`);points.push(await read(files[i],parser))}
+    for(let i=0;i<files.length;i++){progress?.(`Leyendo locaciones… ${i+1}/${files.length}`);points.push(await read(files[i],parser));photos[i].locationScanned=true}
     if(!points.some(Boolean))return;
-    try{const cities=await load();photos.forEach((p,i)=>{p.location=nearest(points[i],cities)})}catch{photos.forEach(p=>{p.locationStatus='catalog-unavailable'})}
+    try{const cities=await load();photos.forEach((p,i)=>{p.location=nearest(points[i],cities)})}catch{photos.forEach((p,i)=>{p.locationStatus='catalog-unavailable';if(points[i])p.locationScanned=false})}
+  }
+  async function enrichSaved(photos,progress,parser,store,load=catalog){
+    const pending=photos.filter(photo=>!photo.locationScanned);
+    for(let i=0;i<pending.length;i++){
+      const photo=pending[i];progress?.(`Leyendo locaciones… ${i+1}/${pending.length}`);
+      let file;
+      try{file=(await store.originals([photo]))[0]}catch{const response=await fetch(photo.url);if(!response.ok)throw Error('Photo original unavailable');file=await response.blob()}
+      await enrich([file],[photo],null,parser,load);
+    }
+    return summarize(photos);
   }
   function summarize(photos){
     const places=new Map();let matched=0;
@@ -58,5 +68,5 @@
     target.frameLocationKey=key;
     target.layers.push({id:'frame-location-'+target.id,type:'text',text,x:24,y:395,w:292,size,color:ink(target.bg),font:'mono',weight:400,rot:0,z:45,hidden:false,locked:true,frameLocation:true});
   }
-  return {read,enrich,nearest,distance,summarize,settings,index,strip,decorate,clean};
+  return {read,enrich,enrichSaved,nearest,distance,summarize,settings,index,strip,decorate,clean};
 });

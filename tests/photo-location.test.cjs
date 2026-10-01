@@ -1,5 +1,12 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const loc=require('../frame/photo-location.js'),exifr=require('exifr'),fixtures=require('./support/gps-fixture.cjs'),engine=require('../frame/template-engine.js'),catalog=require('../frame/template-catalog.json');
+test('enabling GPS later reads saved originals once and retries a previously unavailable catalog',async()=>{
+ const photos=[{id:'p1'}],file=fixtures.heic(4.142,-73.626);let reads=0;
+ const store={originals:async requested=>{reads++;assert.equal(requested[0],photos[0]);return [file]}};
+ await loc.enrichSaved(photos,null,exifr,store,async()=>{throw Error('offline')});assert.equal(photos[0].locationScanned,false);
+ const summary=await loc.enrichSaved(photos,null,exifr,store,async()=>[['Villavicencio','CO',4.142,-73.626]]);assert.match(summary.text,/Villavicencio/);assert.equal(reads,2);
+ await loc.enrichSaved(photos,null,exifr,store,async()=>{throw Error('should not reload')});assert.equal(reads,2);
+});
 test('real EXIF parser reads JPEG byte orders and HEIC GPS, with missing/corrupt fallback',async()=>{
  for(const data of [fixtures.jpeg(Buffer.from([255,216,255,217]),4.142,-73.626,false),fixtures.jpeg(Buffer.from([255,216,255,217]),-33.86,151.2,true),fixtures.heic(40.78,-73.97)]){
   const p=await loc.read(data,exifr);assert.ok(p);assert.ok(Math.abs(p.latitude)>1);assert.ok(Math.abs(p.longitude)>1);

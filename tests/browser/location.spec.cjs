@@ -1,11 +1,12 @@
+const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test'),fs=require('node:fs/promises'),path=require('node:path');
 const {jpeg}=require('../support/gps-fixture.cjs');
 const ids=[10,20,24,28,29,42,43,47],dir=path.resolve('test-results/location-fixtures');
-test.beforeAll(async()=>{
+test.beforeAll(async()=>{test.setTimeout(240000);
  await fs.mkdir(dir,{recursive:true});
  for(const id of ids){
   const original=path.join(dir,'original-'+id+'.jpg');let bytes;
-  try{bytes=await fs.readFile(original)}catch{const response=await fetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Fixture download failed');bytes=Buffer.from(await response.arrayBuffer());await fs.writeFile(original,bytes)}
+  try{bytes=await fs.readFile(original)}catch{const response=await fixtureFetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Fixture download failed');bytes=Buffer.from(await response.arrayBuffer());await fs.writeFile(original,bytes)}
   await fs.writeFile(path.join(dir,'gps-'+id+'.jpg'),jpeg(bytes,4.142,-73.626));
  }
 });
@@ -14,6 +15,11 @@ async function choose(page,gps=true,append=false){
  await picker.setFiles(ids.map(id=>path.join(dir,(gps?'gps-':'original-')+id+'.jpg')));
  await expect(page.locator('#templateJourney')).toBeVisible();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','templates');await expect(page.locator('#loading')).toBeHidden();
 }
+test('GPS enabled after an opt-out import reads persisted originals, then restores after reload',async({page})=>{
+ await page.goto('/');await choose(page);await done(page);expect(await page.evaluate(()=>S.photos.every(p=>!p.locationScanned))).toBe(true);
+ await page.getByText('Locación',{exact:true}).click();await page.locator('#locationPosition').selectOption('last');await note(page,'last');
+ await page.reload();await page.locator('#resumeBtn').click();await note(page,'last');
+});
 async function done(page,surprise=false){await page.locator(surprise?'#journeySurprise':'#journeyCreate').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000})}
 async function note(page,position){
  const labels=page.locator('#stage .locationLabel');await expect(labels).toHaveCount(1);await expect(labels).toContainText('Villavicencio');

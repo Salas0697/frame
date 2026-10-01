@@ -1,5 +1,9 @@
+const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test'),fs=require('node:fs/promises'),path=require('node:path'),{png}=require('../support/color-fixture.cjs');
 const families=['torn_atelier','torn_horizon','cut_diagonal','cut_mosaic'];
+// Mask geometry is independent of model availability; these fixtures explicitly
+// have a known empty detection result. The unavailable path has its own regression.
+test.beforeEach(async({page})=>{await page.route('**/face_detection.js',route=>route.fulfill({contentType:'text/javascript',body:'window.FaceDetection=class{setOptions(){}onResults(fn){this.fn=fn}async send(){this.fn({detections:[]})}}'}))});
 test('new cut series previews, creates, exports real masks, varies and restores',async({page})=>{
  const dir=path.resolve('test-results/cut-fixtures');await fs.mkdir(dir,{recursive:true});const files=[];for(let i=0;i<8;i++){const file=path.join(dir,i+'.png');await fs.writeFile(file,png([220,40,50],[220,40,50]));files.push(file)}
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.goto('/');const picker=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await picker).setFiles(files);await expect(page.locator('#journeyCreate')).toBeEnabled();
@@ -24,7 +28,7 @@ test('new cut series previews, creates, exports real masks, varies and restores'
 });
 test('photographic previews show the four new visual families',async({page})=>{
  const dir=path.resolve('test-results/cut-photos');await fs.mkdir(dir,{recursive:true});const files=[];
- for(const id of [10,20,24,28,42,43,47,49]){const r=await fetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error('Fixture unavailable');const f=path.join(dir,id+'.jpg');await fs.writeFile(f,Buffer.from(await r.arrayBuffer()));files.push(f)}
+ for(const id of [10,20,24,28,42,43,47,49]){const r=await fixtureFetch('https://picsum.photos/id/'+id+'/900/1200',{signal:AbortSignal.timeout(30000)});if(!r.ok)throw Error('Fixture unavailable');const f=path.join(dir,id+'.jpg');await fs.writeFile(f,Buffer.from(await r.arrayBuffer()));files.push(f)}
  await page.goto('/');const picker=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await picker).setFiles(files);await expect(page.locator('#journeyCreate')).toBeEnabled();await page.locator('#journeyCuts').click();await expect(page.locator('.journeyTemplate')).toHaveCount(4);
  await page.screenshot({path:'test-results/cuts-photographic-library-'+test.info().project.name+'.png',fullPage:true});
  await page.locator('[data-family=cut_diagonal]').click();await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});

@@ -17,6 +17,8 @@ document.addEventListener('touchstart',e=>{const el=e.target.closest?.('.imgLaye
 document.addEventListener('touchmove',e=>{const el=e.target.closest?.('.imgLayer,.textLayer');if(el&&el!==armed)e.stopImmediatePropagation()},{capture:true,passive:true});
 document.addEventListener('touchend',e=>{const el=e.target.closest?.('.imgLayer,.textLayer');if(el&&el!==armed){e.stopImmediatePropagation();bar.classList.add('on')}},{capture:true,passive:true});
 document.addEventListener('click',e=>{const el=e.target.closest?.('.imgLayer,.textLayer');if(!el||el===armed)return;e.preventDefault();e.stopImmediatePropagation();selectOnly(el)},{capture:true});
+// Keyboard users can reach the same explicit editors without touch gestures.
+document.addEventListener('keydown',e=>{const el=e.target.closest?.('.imgLayer,.textLayer[tabindex]');if(!el||!['Enter',' '].includes(e.key))return;e.preventDefault();e.stopImmediatePropagation();selectOnly(el);openEditor()},{capture:true});
 // Double tap/click edits instead of moving.
 document.addEventListener('dblclick',e=>{const el=e.target.closest?.('.imgLayer,.textLayer');if(!el)return;e.preventDefault();e.stopImmediatePropagation();selectOnly(el);openEditor()},{capture:true});
 // Add an unmistakable delete action inside the text editor itself.

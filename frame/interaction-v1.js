@@ -161,7 +161,7 @@
   $('#textInput')?.addEventListener('focus',()=>setTimeout(()=>$('#textSheet')?.scrollIntoView({block:'end',behavior:'smooth'}),120));
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheets();updateSheetState()}});
 
-  const _renderAll=renderAll; renderAll=function(){_renderAll();wireAllSheets();updatePager();syncPhotoModes()};
+  FrameLifecycle.on('afterRender',()=>{wireAllSheets();updatePager();syncPhotoModes()});
   renderStage();renderFilmstrip();wireAllSheets();updatePager();syncPhotoModes();
   toast('Interacción refinada');
 })();

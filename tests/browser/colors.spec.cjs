@@ -1,6 +1,6 @@
 const {test,expect}=require('@playwright/test'),fs=require('node:fs/promises'),path=require('node:path'),{png}=require('../support/color-fixture.cjs');
 const dir=path.resolve('test-results/color-fixtures'),measured=['#dc141e','#14a03c','#2346be','#e6bd28'];
-test.beforeAll(async()=>{await fs.mkdir(dir,{recursive:true});for(let i=0;i<8;i++)await fs.writeFile(path.join(dir,'color-'+i+'.png'),i%2?png([35,70,190],[230,189,40]):png([220,20,30],[20,160,60]))});
+test.beforeAll(async()=>{test.setTimeout(240000);await fs.mkdir(dir,{recursive:true});for(let i=0;i<8;i++)await fs.writeFile(path.join(dir,'color-'+i+'.png'),i%2?png([35,70,190],[230,189,40]):png([220,20,30],[20,160,60]))});
 async function prepare(page){
  await page.goto('/');const wait=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await wait).setFiles(Array.from({length:8},(_,i)=>path.join(dir,'color-'+i+'.png')));
  await expect(page.locator('#templateJourney')).toBeVisible();expect(await page.locator('#backgroundSwatches button').count()).toBe(0);

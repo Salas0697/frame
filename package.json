@@ -3,9 +3,13 @@
   "private": true,
   "scripts": {
     "build": "node tools/build.mjs",
-    "test": "node --test tests/*.test.cjs"
+    "test": "node --test tests/*.test.cjs",
+    "test:e2e": "playwright test",
+    "check:build": "node tools/build.mjs --check",
+    "package:site": "node tools/package-site.mjs"
   },
   "devDependencies": {
+    "@playwright/test": "1.55.0",
     "cities.json": "1.1.61",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^30.0.1"

@@ -54,12 +54,24 @@
   const location=document.createElement('details');location.className='editorialFinish';
   location.innerHTML='<summary>Locación</summary><div class="locationControls"><label for="locationPosition">Una sola nota</label><select id="locationPosition"><option value="off">Sin locación</option><option value="first">En la primera</option><option value="middle">En el medio</option><option value="last">Al final</option></select><label for="locationText">Lugar</label><input id="locationText" maxlength="80" placeholder="Escribe el lugar" autocomplete="off"><p id="locationStatus" class="locationHint" role="status"></p><p class="locationHint">Localidades aproximadas · <a href="https://www.geonames.org/" target="_blank" rel="noopener">GeoNames</a> / <a href="https://github.com/lutangar/cities.json" target="_blank" rel="noopener">cities.json</a> · CC BY 4.0. Sin enviar coordenadas.</p></div>';
   bar.append(location);
-  function changeLocation(event){
-    if($('#locationPosition').disabled)return;
+  let locationBusy=false;
+  async function changeLocation(event){
+    if($('#locationPosition').disabled||locationBusy)return;
     pushHistory();const position=$('#locationPosition').value,text=FramePhotoLocation.clean($('#locationText').value);
-    S.frameLocation={...(S.frameLocation||{}),enabled:position!=='off',position:position==='off'?'last':position,text,source:event.target.id==='locationText'?'manual':S.frameLocation?.source||'manual'};
-    S.frameBrief={...(S.frameBrief||{}),location:position==='off'?'no':'yes',locationPosition:S.frameLocation.position,locationText:S.frameLocation.source==='manual'?text:''};
-    renderAll();saveProject();
+    const source=event.target.id==='locationText'?'manual':S.frameLocation?.source||'gps';
+    const config={...(S.frameLocation||{}),enabled:position!=='off',position:position==='off'?'last':position,text,source};
+    const project=S;S.frameLocation=config;
+    S.frameBrief={...(S.frameBrief||{}),location:position==='off'?'no':'yes',locationPosition:config.position,locationText:source==='manual'?text:''};
+    renderAll();
+    if(config.enabled&&source==='gps'&&S.photos.some(photo=>!photo.locationScanned)){
+      locationBusy=true;$('#locationPosition').disabled=$('#locationText').disabled=true;
+      try{
+        const summary=await FramePhotoLocation.enrichSaved(project.photos,message=>{$('#locationStatus').textContent=message},window.exifr,FramePhotoStore);
+        if(S===project&&S.frameLocation===config)Object.assign(config,summary);
+      }catch(error){console.warn('Location lookup failed',error);if(S===project&&S.frameLocation===config)toast('No pude leer la locación. Puedes escribir el lugar.')}
+      finally{locationBusy=false;$('#locationPosition').disabled=$('#locationText').disabled=!!window.framePhotoImport?.active}
+    }
+    if(S===project){renderAll();saveProject()}
   }
   document.querySelector('.quickbar')?.after(bar);
   const hint=document.createElement('p');hint.className='journeyEditorHint';hint.textContent='03 · Ajusta y comparte · Toca una foto para reencuadrar. Otra opción cambia la composición de tu template.';bar.after(hint);
@@ -96,7 +108,9 @@
   };
   document.addEventListener('frame:import-phase',e=>{browse.disabled=e.detail.phase!=='idle'});
   const supportsCaption = id => [...(catalog.families.find(f=>f.id===id)?.variants||[]),...(catalog.families.find(f=>f.id===id)?.covers||[])].some(v=>v.captionRegion);
+  const analysisNotice=document.createElement('p');analysisNotice.id='analysisNotice';analysisNotice.hidden=true;analysisNotice.className='collectionNote';analysisNotice.setAttribute('role','status');analysisNotice.textContent='Conservamos las fotos completas. Revisa los encuadres antes de exportar.';bar.after(analysisNotice);
   function sync() {
+    analysisNotice.hidden=!S.photos.some(photo=>photo.faceAnalysisStatus==='unavailable');
     const loc=S.frameLocation;
     $('#locationPosition').value=loc?.enabled?loc.position:'off';
     if(document.activeElement!==$('#locationText'))$('#locationText').value=loc?.text||'';
@@ -132,8 +146,7 @@
   document.addEventListener('frame:import-phase',event=>{
     $('#locationPosition').disabled=$('#locationText').disabled=select.disabled=input.disabled=$('#frameBackground').disabled=$('#frameTreatment').disabled=event.detail.phase!=='idle';
   });
-  const render = renderAll;
-  renderAll = function() { render(); sync(); };
+  FrameLifecycle.on('afterRender',sync);
   sync();
   const css=document.createElement('style');
   css.textContent=`.templateBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:0 16px 12px}.collectionNote{width:100%;margin:0 0 3px;font-size:11px;line-height:1.5;color:#a2a2a8}.templateBar label{font-size:11px;color:#999}.templateBar select{appearance:none;-webkit-appearance:none;color-scheme:dark;flex:1;min-width:0;max-width:100%;min-height:40px;color:#eee;background:#151518;border:1px solid #303036;border-radius:12px;padding:0 10px;font:inherit;font-size:12px}.templateBar select option{color:#eee;background:#151518}.templateBar select:disabled{opacity:.45}.templateNotes{width:100%;font-size:11px;color:#aaa}.templateNotes summary{cursor:pointer;padding:4px 0}.templateNotes input{box-sizing:border-box;width:100%;min-height:40px;margin-top:5px;border:1px solid #303036;border-radius:10px;padding:8px 10px;background:#151518;color:#eee;font-size:16px}.emptyStateFast .templateBar{display:none}.slide[data-family] .textLayer{letter-spacing:normal;text-shadow:none}#storyBadge,.storyBadge,.coverageBadge{display:none!important}`;

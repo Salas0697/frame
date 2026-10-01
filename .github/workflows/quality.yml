@@ -4,6 +4,7 @@ on:
     branches: [main]
   push:
     branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -17,13 +18,20 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: npm run check:build
       - run: npm test
-      - name: Install browser test tools
-        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
       - run: npx playwright install --with-deps chromium webkit
+      - uses: actions/cache@v4
+        with:
+          path: .qa/photos
+          key: frame-real-photos-v1
       - name: Real image browser acceptance
-        run: npx playwright test
+        run: npm run test:e2e
+      - run: npm run package:site
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: .qa/site
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -32,3 +40,19 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: frame-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
