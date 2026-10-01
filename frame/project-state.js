@@ -8,7 +8,7 @@
     slides: [], currentSlide: 0, randomMode: 'all', showSafe: false,
     finish: 'clean', photoEditMode: 'crop', frameBrief: null,
     frameTemplateFamily: '', frameCaption: '', frameArtDirection: '',
-    frameLastDesign: null, frameBackground: 'auto', frameBackgroundColor: null,
+    frameLastDesign: null, frameBackground: 'collection', frameBackgroundColor: null,
     frameTreatment: 'gallery', frameNarrative: '', heroPhotoId: null, frameLocation: null
   };
   const copy = value => JSON.parse(JSON.stringify(value));

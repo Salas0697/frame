@@ -269,7 +269,8 @@
           }
         }
       ],
-      "description": "Tu referencia: mosaicos limpios y una nota al pie."
+      "description": "Tu referencia: mosaicos limpios y una nota al pie.",
+      "visualRecipe": "none"
     },
     {
       "id": "gallery_book",
@@ -323,6 +324,46 @@
             "w": 0.84,
             "h": 0.06
           }
+        },
+        {
+          "id": "gallery_book_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.42,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "gallery_book_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "background": "#ffffff",
@@ -370,7 +411,8 @@
           }
         }
       ],
-      "description": "El ritmo pausado de un libro de fotografía."
+      "description": "El ritmo pausado de un libro de fotografía.",
+      "visualRecipe": "rule"
     },
     {
       "id": "editorial_pair",
@@ -448,6 +490,46 @@
               "h": 0.55
             }
           ]
+        },
+        {
+          "id": "editorial_pair_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "editorial_pair_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.38,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "background": "#ffffff",
@@ -495,7 +577,8 @@
           }
         }
       ],
-      "description": "Dípticos y trípticos para dialogar entre imágenes."
+      "description": "Dípticos y trípticos para dialogar entre imágenes.",
+      "visualRecipe": "hinge"
     },
     {
       "id": "film_archive",
@@ -578,6 +661,46 @@
               "h": 0.276
             }
           ]
+        },
+        {
+          "id": "film_archive_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.42,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "film_archive_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "background": "#161616",
@@ -626,7 +749,8 @@
           }
         }
       ],
-      "description": "Tiras y hojas de contacto con ritmo de película."
+      "description": "Tiras y hojas de contacto con ritmo de película.",
+      "visualRecipe": "sprockets"
     },
     {
       "id": "travel_journal",
@@ -709,6 +833,46 @@
             "w": 0.84,
             "h": 0.06
           }
+        },
+        {
+          "id": "travel_journal_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "travel_journal_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.38,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "background": "#faf8f3",
@@ -756,7 +920,8 @@
           }
         }
       ],
-      "description": "Una imagen principal y pequeños recuerdos."
+      "description": "Una imagen principal y pequeños recuerdos.",
+      "visualRecipe": "journal"
     },
     {
       "id": "continuous",
@@ -900,7 +1065,8 @@
           }
         }
       ],
-      "description": "Paisajes continuos entre páginas, cuando el recorte lo permite."
+      "description": "Paisajes continuos entre páginas, cuando el recorte lo permite.",
+      "visualRecipe": "none"
     },
     {
       "id": "soft_scrapbook",
@@ -976,6 +1142,46 @@
               "rotation": 2
             }
           ]
+        },
+        {
+          "id": "soft_scrapbook_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "soft_scrapbook_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.38,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "background": "#faf8f3",
@@ -1029,7 +1235,8 @@
           }
         }
       ],
-      "description": "Recuerdos superpuestos con giros contenidos."
+      "description": "Recuerdos superpuestos con giros contenidos.",
+      "visualRecipe": "tape"
     },
     {
       "id": "color_editorial",
@@ -1075,6 +1282,46 @@
               "h": 0.7
             }
           ]
+        },
+        {
+          "id": "color_editorial_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.42,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "color_editorial_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "background": "single_photo_derived_accent",
@@ -1122,7 +1369,8 @@
           }
         }
       ],
-      "description": "Color tomado de tus fotos y composición sobria."
+      "description": "Color tomado de tus fotos y composición sobria.",
+      "visualRecipe": "blocks"
     },
     {
       "id": "full_bleed",
@@ -1230,6 +1478,46 @@
               "h": 0.494
             }
           ]
+        },
+        {
+          "id": "full_bleed_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "full_bleed_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.38,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "covers": [
@@ -1259,7 +1547,8 @@
             }
           ]
         }
-      ]
+      ],
+      "visualRecipe": "none"
     },
     {
       "id": "offset_studies",
@@ -1391,6 +1680,46 @@
             "w": 0.84,
             "h": 0.06
           }
+        },
+        {
+          "id": "offset_studies_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.42,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "offset_studies_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "covers": [
@@ -1432,7 +1761,8 @@
             "h": 0.06
           }
         }
-      ]
+      ],
+      "visualRecipe": "rail"
     },
     {
       "id": "cinema_club",
@@ -1553,6 +1883,46 @@
             "w": 0.84,
             "h": 0.06
           }
+        },
+        {
+          "id": "cinema_club_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "cinema_club_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.38,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "covers": [
@@ -1594,7 +1964,8 @@
             "h": 0.06
           }
         }
-      ]
+      ],
+      "visualRecipe": "screen"
     },
     {
       "id": "collector",
@@ -1720,6 +2091,46 @@
               "h": 0.2625
             }
           ]
+        },
+        {
+          "id": "collector_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.42,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "collector_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "covers": [
@@ -1761,7 +2172,8 @@
             "h": 0.06
           }
         }
-      ]
+      ],
+      "visualRecipe": "mount"
     },
     {
       "id": "column_house",
@@ -1917,6 +2329,46 @@
             "w": 0.84,
             "h": 0.06
           }
+        },
+        {
+          "id": "column_house_pause",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "column_house_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.38,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
         }
       ],
       "covers": [
@@ -1926,10 +2378,10 @@
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.045,
-              "y": 0.05,
-              "w": 0.64,
-              "h": 0.81
+              "x": 0.53,
+              "y": 0.06,
+              "w": 0.38,
+              "h": 0.8
             }
           ],
           "captionRegion": {
@@ -1945,10 +2397,10 @@
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.32,
-              "y": 0.05,
-              "w": 0.635,
-              "h": 0.81
+              "x": 0.09,
+              "y": 0.11,
+              "w": 0.43,
+              "h": 0.68
             }
           ],
           "captionRegion": {
@@ -1958,7 +2410,8 @@
             "h": 0.06
           }
         }
-      ]
+      ],
+      "visualRecipe": "columns"
     },
     {
       "id": "contact_press",
@@ -2252,7 +2705,8 @@
             "h": 0.06
           }
         }
-      ]
+      ],
+      "visualRecipe": "registration"
     },
     {
       "id": "torn_atelier",
@@ -2344,50 +2798,91 @@
             "w": 0.86,
             "h": 0.055
           }
-        }
-      ],
-      "covers": [
+        },
         {
-          "id": "torn_atelier_cover_a",
+          "id": "torn_atelier_pause",
           "photoCount": 1,
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.09,
-              "y": 0.065,
-              "w": 0.82,
-              "h": 0.79,
+              "x": 0.07,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
               "rotation": 0
             }
           ],
           "captionRegion": {
-            "x": 0.07,
+            "x": 0.08,
             "y": 0.92,
-            "w": 0.86,
+            "w": 0.84,
             "h": 0.055
           }
         },
         {
-          "id": "torn_atelier_cover_b",
+          "id": "torn_atelier_coda",
           "photoCount": 1,
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.16,
-              "y": 0.16,
-              "w": 0.7,
-              "h": 0.67,
+              "x": 0.38,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
               "rotation": 0
             }
           ],
           "captionRegion": {
-            "x": 0.07,
+            "x": 0.08,
             "y": 0.92,
-            "w": 0.86,
+            "w": 0.84,
             "h": 0.055
           }
         }
-      ]
+      ],
+      "covers": [
+        {
+          "id": "torn_atelier_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.08,
+              "w": 0.69,
+              "h": 0.63,
+              "rotation": -2
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "torn_atelier_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.28,
+              "y": 0.24,
+              "w": 0.62,
+              "h": 0.56,
+              "rotation": 2
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ],
+      "visualRecipe": "atelier"
     },
     {
       "id": "torn_horizon",
@@ -2486,50 +2981,91 @@
             "w": 0.86,
             "h": 0.055
           }
-        }
-      ],
-      "covers": [
+        },
         {
-          "id": "torn_horizon_cover_a",
+          "id": "torn_horizon_pause",
           "photoCount": 1,
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.09,
-              "y": 0.065,
-              "w": 0.82,
-              "h": 0.79,
+              "x": 0.42,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
               "rotation": 0
             }
           ],
           "captionRegion": {
-            "x": 0.07,
+            "x": 0.08,
             "y": 0.92,
-            "w": 0.86,
+            "w": 0.84,
             "h": 0.055
           }
         },
         {
-          "id": "torn_horizon_cover_b",
+          "id": "torn_horizon_coda",
           "photoCount": 1,
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.16,
-              "y": 0.16,
-              "w": 0.7,
-              "h": 0.67,
+              "x": 0.06,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
               "rotation": 0
             }
           ],
           "captionRegion": {
-            "x": 0.07,
+            "x": 0.08,
             "y": 0.92,
-            "w": 0.86,
+            "w": 0.84,
             "h": 0.055
           }
         }
-      ]
+      ],
+      "covers": [
+        {
+          "id": "torn_horizon_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.04,
+              "y": 0.19,
+              "w": 0.92,
+              "h": 0.49,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "torn_horizon_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.1,
+              "y": 0.36,
+              "w": 0.78,
+              "h": 0.43,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ],
+      "visualRecipe": "horizon"
     },
     {
       "id": "cut_diagonal",
@@ -2621,50 +3157,91 @@
             "w": 0.86,
             "h": 0.055
           }
-        }
-      ],
-      "covers": [
+        },
         {
-          "id": "cut_diagonal_cover_a",
+          "id": "cut_diagonal_pause",
           "photoCount": 1,
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.09,
-              "y": 0.065,
-              "w": 0.82,
-              "h": 0.79,
+              "x": 0.07,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
               "rotation": 0
             }
           ],
           "captionRegion": {
-            "x": 0.07,
+            "x": 0.08,
             "y": 0.92,
-            "w": 0.86,
+            "w": 0.84,
             "h": 0.055
           }
         },
         {
-          "id": "cut_diagonal_cover_b",
+          "id": "cut_diagonal_coda",
           "photoCount": 1,
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.16,
-              "y": 0.16,
-              "w": 0.7,
-              "h": 0.67,
+              "x": 0.38,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
               "rotation": 0
             }
           ],
           "captionRegion": {
-            "x": 0.07,
+            "x": 0.08,
             "y": 0.92,
-            "w": 0.86,
+            "w": 0.84,
             "h": 0.055
           }
         }
-      ]
+      ],
+      "covers": [
+        {
+          "id": "cut_diagonal_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.05,
+              "y": 0.05,
+              "w": 0.57,
+              "h": 0.72,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "cut_diagonal_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.38,
+              "y": 0.19,
+              "w": 0.57,
+              "h": 0.64,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ],
+      "visualRecipe": "diagonal"
     },
     {
       "id": "cut_mosaic",
@@ -2777,46 +3354,1446 @@
             "w": 0.86,
             "h": 0.055
           }
-        }
-      ],
-      "covers": [
+        },
         {
-          "id": "cut_mosaic_cover_a",
+          "id": "cut_mosaic_pause",
           "photoCount": 1,
           "pageSpan": 1,
           "slots": [
             {
-              "x": 0.09,
-              "y": 0.065,
-              "w": 0.82,
-              "h": 0.79,
+              "x": 0.42,
+              "y": 0.16,
+              "w": 0.49,
+              "h": 0.55,
               "rotation": 0
             }
           ],
           "captionRegion": {
-            "x": 0.07,
+            "x": 0.08,
             "y": 0.92,
-            "w": 0.86,
+            "w": 0.84,
             "h": 0.055
           }
         },
         {
-          "id": "cut_mosaic_cover_b",
+          "id": "cut_mosaic_coda",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.43,
+              "w": 0.55,
+              "h": 0.39,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ],
+      "covers": [
+        {
+          "id": "cut_mosaic_cover_1",
           "photoCount": 1,
           "pageSpan": 1,
           "slots": [
             {
               "x": 0.16,
-              "y": 0.16,
-              "w": 0.7,
+              "y": 0.07,
+              "w": 0.66,
+              "h": 0.57,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "cut_mosaic_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.33,
+              "w": 0.78,
+              "h": 0.47,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ],
+      "visualRecipe": "mosaic"
+    },
+    {
+      "id": "bauhaus_blocks",
+      "name": "Bauhaus",
+      "description": "Bloques de color, fotos desplazadas y contrastes de escala.",
+      "priority": 1,
+      "initialWeight": 10,
+      "preferPurpose": [
+        "story",
+        "memory",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "bold"
+      ],
+      "background": "#efe9de",
+      "sourceIds": [
+        "frame_original"
+      ],
+      "visualRecipe": "blocks",
+      "variants": [
+        {
+          "id": "bauhaus_blocks_1",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.09,
+              "w": 0.61,
+              "h": 0.62,
+              "rotation": 0
+            },
+            {
+              "x": 0.71,
+              "y": 0.48,
+              "w": 0.23,
+              "h": 0.33,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "bauhaus_blocks_2",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.07,
+              "w": 0.35,
+              "h": 0.38,
+              "rotation": 0
+            },
+            {
+              "x": 0.49,
+              "y": 0.27,
+              "w": 0.44,
+              "h": 0.53,
+              "rotation": 0
+            },
+            {
+              "x": 0.08,
+              "y": 0.65,
+              "w": 0.31,
+              "h": 0.22,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "bauhaus_blocks_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.13,
+              "w": 0.78,
+              "h": 0.59,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "bauhaus_blocks_4",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.07,
+              "w": 0.42,
+              "h": 0.38,
+              "rotation": 0
+            },
+            {
+              "x": 0.52,
+              "y": 0.07,
+              "w": 0.42,
+              "h": 0.38,
+              "rotation": 0
+            },
+            {
+              "x": 0.25,
+              "y": 0.53,
+              "w": 0.5,
+              "h": 0.32,
+              "rotation": 0
+            }
+          ]
+        }
+      ],
+      "covers": [
+        {
+          "id": "bauhaus_blocks_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.06,
+              "w": 0.63,
               "h": 0.67,
               "rotation": 0
             }
           ],
           "captionRegion": {
-            "x": 0.07,
+            "x": 0.08,
             "y": 0.92,
-            "w": 0.86,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "bauhaus_blocks_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.4,
+              "y": 0.27,
+              "w": 0.54,
+              "h": 0.56,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "bauhaus_blocks_cover_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.41,
+              "w": 0.62,
+              "h": 0.43,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ]
+    },
+    {
+      "id": "margin_notes",
+      "name": "Margen",
+      "description": "Mucho aire, líneas finas y una lectura de izquierda a derecha.",
+      "priority": 1,
+      "initialWeight": 10,
+      "preferPurpose": [
+        "story",
+        "memory",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "soft"
+      ],
+      "background": "#fbfaf6",
+      "sourceIds": [
+        "frame_original"
+      ],
+      "visualRecipe": "margin",
+      "variants": [
+        {
+          "id": "margin_notes_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.19,
+              "y": 0.09,
+              "w": 0.71,
+              "h": 0.71,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "margin_notes_2",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.19,
+              "y": 0.08,
+              "w": 0.49,
+              "h": 0.43,
+              "rotation": 0
+            },
+            {
+              "x": 0.46,
+              "y": 0.57,
+              "w": 0.43,
+              "h": 0.27,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "margin_notes_3",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.19,
+              "y": 0.1,
+              "w": 0.31,
+              "h": 0.67,
+              "rotation": 0
+            },
+            {
+              "x": 0.59,
+              "y": 0.37,
+              "w": 0.31,
+              "h": 0.42,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "margin_notes_4",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.19,
+              "y": 0.08,
+              "w": 0.7,
+              "h": 0.27,
+              "rotation": 0
+            },
+            {
+              "x": 0.19,
+              "y": 0.4,
+              "w": 0.44,
+              "h": 0.43,
+              "rotation": 0
+            },
+            {
+              "x": 0.7,
+              "y": 0.5,
+              "w": 0.21,
+              "h": 0.29,
+              "rotation": 0
+            }
+          ]
+        }
+      ],
+      "covers": [
+        {
+          "id": "margin_notes_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.21,
+              "y": 0.07,
+              "w": 0.69,
+              "h": 0.72,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "margin_notes_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.21,
+              "y": 0.34,
+              "w": 0.46,
+              "h": 0.5,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "margin_notes_cover_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.39,
+              "y": 0.12,
+              "w": 0.51,
+              "h": 0.61,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ]
+    },
+    {
+      "id": "stacked_index",
+      "name": "Archivo Apilado",
+      "description": "Tarjetas con cantos visibles, escalas pequeñas y una pausa amplia.",
+      "priority": 1,
+      "initialWeight": 10,
+      "preferPurpose": [
+        "story",
+        "memory",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "bold"
+      ],
+      "background": "#e7e0d3",
+      "sourceIds": [
+        "frame_original"
+      ],
+      "visualRecipe": "stack",
+      "variants": [
+        {
+          "id": "stacked_index_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.16,
+              "y": 0.13,
+              "w": 0.62,
+              "h": 0.61,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "stacked_index_2",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.12,
+              "w": 0.4,
+              "h": 0.35,
+              "rotation": 0
+            },
+            {
+              "x": 0.54,
+              "y": 0.49,
+              "w": 0.4,
+              "h": 0.35,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "stacked_index_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.08,
+              "w": 0.36,
+              "h": 0.27,
+              "rotation": 0
+            },
+            {
+              "x": 0.55,
+              "y": 0.3,
+              "w": 0.36,
+              "h": 0.27,
+              "rotation": 0
+            },
+            {
+              "x": 0.18,
+              "y": 0.63,
+              "w": 0.36,
+              "h": 0.27,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "stacked_index_4",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.12,
+              "w": 0.36,
+              "h": 0.65,
+              "rotation": 0
+            },
+            {
+              "x": 0.58,
+              "y": 0.12,
+              "w": 0.34,
+              "h": 0.28,
+              "rotation": 0
+            },
+            {
+              "x": 0.58,
+              "y": 0.5,
+              "w": 0.34,
+              "h": 0.28,
+              "rotation": 0
+            }
+          ]
+        }
+      ],
+      "covers": [
+        {
+          "id": "stacked_index_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.11,
+              "w": 0.64,
+              "h": 0.65,
+              "rotation": -2
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "stacked_index_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.3,
+              "y": 0.2,
+              "w": 0.58,
+              "h": 0.56,
+              "rotation": 2
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "stacked_index_cover_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.1,
+              "y": 0.33,
+              "w": 0.67,
+              "h": 0.5,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ]
+    },
+    {
+      "id": "neon_stage",
+      "name": "Neón",
+      "description": "Escenario oscuro, barras intensas y encuadres como carteles.",
+      "priority": 1,
+      "initialWeight": 10,
+      "preferPurpose": [
+        "story",
+        "memory",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "soft"
+      ],
+      "background": "#101017",
+      "sourceIds": [
+        "frame_original"
+      ],
+      "visualRecipe": "neon",
+      "variants": [
+        {
+          "id": "neon_stage_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.12,
+              "y": 0.12,
+              "w": 0.66,
+              "h": 0.69,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "neon_stage_2",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.08,
+              "w": 0.84,
+              "h": 0.39,
+              "rotation": 0
+            },
+            {
+              "x": 0.29,
+              "y": 0.55,
+              "w": 0.56,
+              "h": 0.31,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "neon_stage_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.1,
+              "w": 0.27,
+              "h": 0.62,
+              "rotation": 0
+            },
+            {
+              "x": 0.41,
+              "y": 0.27,
+              "w": 0.27,
+              "h": 0.62,
+              "rotation": 0
+            },
+            {
+              "x": 0.74,
+              "y": 0.1,
+              "w": 0.18,
+              "h": 0.36,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "neon_stage_4",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.22,
+              "y": 0.25,
+              "w": 0.6,
+              "h": 0.48,
+              "rotation": 0
+            }
+          ]
+        }
+      ],
+      "covers": [
+        {
+          "id": "neon_stage_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.1,
+              "y": 0.08,
+              "w": 0.78,
+              "h": 0.73,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "neon_stage_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.33,
+              "y": 0.24,
+              "w": 0.55,
+              "h": 0.59,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "neon_stage_cover_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.13,
+              "y": 0.33,
+              "w": 0.5,
+              "h": 0.48,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ]
+    },
+    {
+      "id": "blueprint",
+      "name": "Blueprint",
+      "description": "Retícula azul, cruces de registro y composiciones arquitectónicas.",
+      "priority": 1,
+      "initialWeight": 10,
+      "preferPurpose": [
+        "story",
+        "memory",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "bold"
+      ],
+      "background": "#122d48",
+      "sourceIds": [
+        "frame_original"
+      ],
+      "visualRecipe": "grid",
+      "variants": [
+        {
+          "id": "blueprint_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.14,
+              "y": 0.09,
+              "w": 0.73,
+              "h": 0.69,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "blueprint_2",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.09,
+              "y": 0.09,
+              "w": 0.33,
+              "h": 0.69,
+              "rotation": 0
+            },
+            {
+              "x": 0.55,
+              "y": 0.25,
+              "w": 0.36,
+              "h": 0.43,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "blueprint_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.1,
+              "y": 0.1,
+              "w": 0.53,
+              "h": 0.39,
+              "rotation": 0
+            },
+            {
+              "x": 0.69,
+              "y": 0.1,
+              "w": 0.21,
+              "h": 0.39,
+              "rotation": 0
+            },
+            {
+              "x": 0.1,
+              "y": 0.59,
+              "w": 0.8,
+              "h": 0.26,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "blueprint_4",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.12,
+              "y": 0.13,
+              "w": 0.33,
+              "h": 0.29,
+              "rotation": 0
+            },
+            {
+              "x": 0.56,
+              "y": 0.56,
+              "w": 0.33,
+              "h": 0.29,
+              "rotation": 0
+            }
+          ]
+        }
+      ],
+      "covers": [
+        {
+          "id": "blueprint_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.17,
+              "y": 0.1,
+              "w": 0.7,
+              "h": 0.7,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "blueprint_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.18,
+              "w": 0.49,
+              "h": 0.57,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "blueprint_cover_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.43,
+              "y": 0.37,
+              "w": 0.44,
+              "h": 0.47,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ]
+    },
+    {
+      "id": "linen_album",
+      "name": "Lino",
+      "description": "Papel cálido, esquinas de montaje y fotos que respiran.",
+      "priority": 1,
+      "initialWeight": 10,
+      "preferPurpose": [
+        "story",
+        "memory",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "soft"
+      ],
+      "background": "#f3ecde",
+      "sourceIds": [
+        "frame_original"
+      ],
+      "visualRecipe": "corners",
+      "variants": [
+        {
+          "id": "linen_album_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.21,
+              "y": 0.14,
+              "w": 0.58,
+              "h": 0.65,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "linen_album_2",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.1,
+              "y": 0.16,
+              "w": 0.36,
+              "h": 0.55,
+              "rotation": 0
+            },
+            {
+              "x": 0.55,
+              "y": 0.32,
+              "w": 0.36,
+              "h": 0.5,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "linen_album_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.1,
+              "y": 0.13,
+              "w": 0.8,
+              "h": 0.38,
+              "rotation": 0
+            },
+            {
+              "x": 0.1,
+              "y": 0.61,
+              "w": 0.35,
+              "h": 0.24,
+              "rotation": 0
+            },
+            {
+              "x": 0.55,
+              "y": 0.61,
+              "w": 0.35,
+              "h": 0.24,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "linen_album_4",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.12,
+              "y": 0.08,
+              "w": 0.52,
+              "h": 0.37,
+              "rotation": 0
+            },
+            {
+              "x": 0.41,
+              "y": 0.54,
+              "w": 0.47,
+              "h": 0.32,
+              "rotation": 0
+            }
+          ]
+        }
+      ],
+      "covers": [
+        {
+          "id": "linen_album_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.22,
+              "y": 0.16,
+              "w": 0.55,
+              "h": 0.62,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "linen_album_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.11,
+              "y": 0.09,
+              "w": 0.71,
+              "h": 0.67,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "linen_album_cover_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.38,
+              "y": 0.31,
+              "w": 0.48,
+              "h": 0.48,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ]
+    },
+    {
+      "id": "postage_album",
+      "name": "Correspondencia",
+      "description": "Bordes perforados, piezas sueltas y el ritmo de una colección postal.",
+      "priority": 1,
+      "initialWeight": 10,
+      "preferPurpose": [
+        "story",
+        "memory",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "bold"
+      ],
+      "background": "#eae4db",
+      "sourceIds": [
+        "frame_original"
+      ],
+      "visualRecipe": "postage",
+      "variants": [
+        {
+          "id": "postage_album_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.14,
+              "y": 0.13,
+              "w": 0.68,
+              "h": 0.61,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "postage_album_2",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.11,
+              "w": 0.34,
+              "h": 0.36,
+              "rotation": 0
+            },
+            {
+              "x": 0.56,
+              "y": 0.49,
+              "w": 0.36,
+              "h": 0.37,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "postage_album_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.1,
+              "w": 0.35,
+              "h": 0.6,
+              "rotation": 0
+            },
+            {
+              "x": 0.57,
+              "y": 0.14,
+              "w": 0.35,
+              "h": 0.29,
+              "rotation": 0
+            },
+            {
+              "x": 0.57,
+              "y": 0.56,
+              "w": 0.35,
+              "h": 0.29,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "postage_album_4",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.08,
+              "y": 0.12,
+              "w": 0.84,
+              "h": 0.28,
+              "rotation": 0
+            },
+            {
+              "x": 0.24,
+              "y": 0.55,
+              "w": 0.52,
+              "h": 0.28,
+              "rotation": 0
+            }
+          ]
+        }
+      ],
+      "covers": [
+        {
+          "id": "postage_album_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.11,
+              "y": 0.1,
+              "w": 0.64,
+              "h": 0.69,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "postage_album_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.25,
+              "y": 0.21,
+              "w": 0.66,
+              "h": 0.6,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "postage_album_cover_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.11,
+              "y": 0.31,
+              "w": 0.57,
+              "h": 0.47,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        }
+      ]
+    },
+    {
+      "id": "ribbon_flow",
+      "name": "Cinta",
+      "description": "Bandas de fondo y una secuencia que cambia de eje y altura.",
+      "priority": 1,
+      "initialWeight": 10,
+      "preferPurpose": [
+        "story",
+        "memory",
+        "impact"
+      ],
+      "preferVibe": [
+        "natural",
+        "soft"
+      ],
+      "background": "#f8f5ef",
+      "sourceIds": [
+        "frame_original"
+      ],
+      "visualRecipe": "ribbon",
+      "variants": [
+        {
+          "id": "ribbon_flow_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.17,
+              "w": 0.67,
+              "h": 0.62,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "ribbon_flow_2",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.07,
+              "y": 0.1,
+              "w": 0.42,
+              "h": 0.44,
+              "rotation": 0
+            },
+            {
+              "x": 0.54,
+              "y": 0.41,
+              "w": 0.39,
+              "h": 0.42,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "ribbon_flow_3",
+          "photoCount": 3,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.06,
+              "y": 0.13,
+              "w": 0.26,
+              "h": 0.65,
+              "rotation": 0
+            },
+            {
+              "x": 0.37,
+              "y": 0.23,
+              "w": 0.26,
+              "h": 0.55,
+              "rotation": 0
+            },
+            {
+              "x": 0.69,
+              "y": 0.4,
+              "w": 0.25,
+              "h": 0.38,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "ribbon_flow_4",
+          "photoCount": 2,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.24,
+              "y": 0.1,
+              "w": 0.7,
+              "h": 0.37,
+              "rotation": 0
+            },
+            {
+              "x": 0.07,
+              "y": 0.6,
+              "w": 0.54,
+              "h": 0.26,
+              "rotation": 0
+            }
+          ]
+        }
+      ],
+      "covers": [
+        {
+          "id": "ribbon_flow_cover_1",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.16,
+              "y": 0.13,
+              "w": 0.68,
+              "h": 0.69,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "ribbon_flow_cover_2",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.3,
+              "y": 0.11,
+              "w": 0.62,
+              "h": 0.57,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
+            "h": 0.055
+          }
+        },
+        {
+          "id": "ribbon_flow_cover_3",
+          "photoCount": 1,
+          "pageSpan": 1,
+          "slots": [
+            {
+              "x": 0.12,
+              "y": 0.26,
+              "w": 0.51,
+              "h": 0.52,
+              "rotation": 0
+            }
+          ],
+          "captionRegion": {
+            "x": 0.08,
+            "y": 0.92,
+            "w": 0.84,
             "h": 0.055
           }
         }
@@ -2824,5 +4801,7 @@
     }
   ],
   "version": "editorial-1",
-  "edition": "Editorial Library 02"
+  "edition": "Editorial Library 02",
+  "libraryRevision": "2026-10-01",
+  "diversityPolicy": "Compare rendered geometry without photo IDs; preserve source crops and vary scale, anchor, density and graphic recipe."
 }

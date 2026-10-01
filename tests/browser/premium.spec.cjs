@@ -90,7 +90,7 @@ test('finishes, fixed page, crop transaction, cover, full miniatures and PNG exp
 test('collection library opens, closes, selects all new families and exports both photographic mounts',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');await upload(page,12);
- await page.locator('#browseCollections').click();await expect(page.locator('#templateJourney')).toBeVisible();await page.locator('#journeyMore').click();await expect(page.locator('.journeyTemplate')).toHaveCount(18);
+ await page.locator('#browseCollections').click();await expect(page.locator('#templateJourney')).toBeVisible();await page.locator('#journeyMore').click();await expect(page.locator('.journeyTemplate')).toHaveCount(require('../../frame/template-catalog.json').families.length);
  await page.screenshot({path:'test-results/library-'+test.info().project.name+'.png'});
  await page.locator('#journeyCancel').press('Escape');await expect(page.locator('#templateJourney')).toBeHidden();await expect(page.locator('#browseCollections')).toBeFocused();
  const families=['full_bleed','offset_studies','cinema_club','collector','column_house','contact_press'];

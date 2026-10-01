@@ -1,0 +1,46 @@
+/* Collection identity uses native layers, shared by selection, editor and export. */
+(function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.FrameTemplateStyle=api})(typeof window!=='undefined'?window:this,()=>{
+  function background(family,photos,colors){return /^#[\da-f]{6}$/i.test(family?.background||'')?family.background:colors.resolve('auto',photos)}
+  function decorate(sl,family,uid,index){
+    const recipe=family.visualRecipe,ink=['#101017','#122d48','#161616','#191919'].includes(sl.bg)?'#e8e5d9':'#403c35';
+    const accent=recipe==='neon'?'#dfff64':recipe==='grid'?'#557f9c':recipe==='blocks'?'#c96542':ink;
+    const add=(x,y,w,h,color=accent,z=2,kind='frame')=>sl.layers.push({id:uid(),type:'deco',kind,x:x*340,y:y*425,w:w*340,h:h*425,rot:0,z,color,hidden:false,locked:true,frameGraphic:true});
+    const images=sl.layers.filter(l=>l.type==='img');
+    if(recipe==='none'||!recipe)return;
+    if(['rule','margin','journal','rail','columns','hinge'].includes(recipe)){
+      const x=recipe==='hinge'?.5:recipe==='margin'?.13:.035;
+      add(x,.06,.002,.81,ink);if(recipe==='journal')add(.055,.87,.84,.002,ink);
+      if(recipe==='margin')for(let i=0;i<3;i++)add(.05,.13+i*.035,.045,.003,ink);
+      if(recipe==='rail')add(.025,.06,.023,.14,ink);
+      if(recipe==='columns')add(.06,.9,.88,.002,ink);
+    }else if(['sprockets','registration'].includes(recipe)){
+      for(let i=0;i<12;i++)for(const x of [.018,.963])add(x,.04+i*.073,.019,.018,ink);
+      if(recipe==='registration')for(const x of [.03,.96]){add(x,.015,.002,.025,ink);add(x-.008,.026,.018,.002,ink)}
+    }else if(['blocks','mosaic','ribbon','horizon','diagonal','neon','screen'].includes(recipe)){
+      if(recipe==='blocks'){add(index%2?.04:.61,.04,.35,.31,'#c96542');add(index%2?.67:.04,.68,.29,.2,'#e2be60')}
+      if(recipe==='mosaic'){add(.03,.06,.022,.22,ink);add(.77,.88,.19,.012,ink)}
+      if(recipe==='ribbon')add(index%2?.62:.08,.03,.22,.87,'#d8c3ac');
+      if(recipe==='horizon')add(.03,.88,.94,.011,ink);
+      if(recipe==='diagonal'){add(.03,.035,.23,.012,ink);add(.94,.71,.013,.17,ink)}
+      if(recipe==='neon'){add(.025,.035,.018,.86);add(.025,.895,.65,.012)}
+      if(recipe==='screen'){add(.055,.025,.89,.018,ink);add(.055,.875,.89,.018,ink)}
+    }else if(recipe==='grid'){
+      for(let i=1;i<10;i++)add(i*.1,0,.001,1,'#28506b');for(let i=1;i<13;i++)add(0,i*.075,1,.0008,'#28506b');
+      for(const x of [.04,.94]){add(x,.88,.002,.035,'#91b4c7');add(x-.015,.897,.032,.002,'#91b4c7')}
+    }else if(['stack','tape','mount','corners','postage','atelier'].includes(recipe)){
+      for(const l of images){
+        const x=l.x/340,y=l.y/425,w=l.w/340,h=l.h/425;
+        if(recipe==='stack'){add(x+.012,y+.018,Math.min(w,.975-x-.012),Math.min(h,.89-y-.018),'#c1b5a3',l.z-.7);add(x-.01,y-.01,w+.02,h+.02,'#fffaf0',l.z-.5)}
+        if(recipe==='tape'){add(x-.012,y-.008,w+.024,h+.016,'#fffdf7',l.z-.5);add(x+w*.32,y-.019,w*.3,.012,'#d5bd95',l.z-.25)}
+        if(recipe==='mount'){add(x-.009,y-.009,w+.018,h+.018,'#b7a98c',l.z-.5)}
+        if(recipe==='corners'||recipe==='atelier')for(const [a,b] of [[x-.012,y-.01],[x+w-.035,y+h-.009]]){add(a,b,.047,.003,ink,l.z-.25);add(a,b-.027,.004,.03,ink,l.z-.25)}
+        if(recipe==='postage'){
+          add(x-.014,y-.011,w+.028,h+.022,'#fffdf7',l.z-.5);
+          for(let i=0;i<Math.floor(w*340/10);i++)for(const b of [y-.011,y+h+.002])add(x+i*10/340,b,.011,.009,sl.bg,l.z-.25,'circle');
+          for(let i=0;i<Math.floor(h*425/10);i++)for(const a of [x-.014,x+w+.003])add(a,y+i*10/425,.011,.009,sl.bg,l.z-.25,'circle');
+        }
+      }
+    }
+  }
+  return {background,decorate};
+});

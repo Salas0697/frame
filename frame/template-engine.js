@@ -6,6 +6,7 @@
 })(typeof window !== 'undefined' ? window : this, function() {
   const W = 340, H = 425;
   const colors=typeof module==='object'&&module.exports?require('./photo-colors.js'):window.FramePhotoColors;
+  const style=typeof module==='object'&&module.exports?require('./template-style.js'):window.FrameTemplateStyle;
   const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
   const aspect = p => Number(p.aspect || p.width / p.height || p.w / p.h) || 1;
   const faces = p => p.faces?.length ? p.faces : p.faceUnion ? [p.faceUnion] : [];
@@ -90,12 +91,23 @@
   function signature(slides) {
     return slides.map(sl => `${sl.frameLayout}:${sl.layers.filter(l=>l.type==='img').map(l=>l.photo.id).join(',')}`).join('|');
   }
+  // Compare the result after contain-fitting, without names, layer IDs or photo order.
+  function geometry(sl) {
+    return sl.layers.filter(l=>l.type==='img'&&!l.hidden).map(l=>[l.x/W,l.y/H,l.w/W,l.h/H,l.rot||0]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  }
+  function distance(a,b){
+    if(!a||!b||a.length!==b.length)return 1;
+    return a.reduce((sum,row,i)=>sum+row.slice(0,4).reduce((n,v,j)=>n+Math.abs(v-b[i][j]),0)/4+Math.abs(row[4]-b[i][4])/180,0)/a.length;
+  }
+  function visualSignature(slides){
+    return JSON.stringify(slides.map(sl=>[sl.bg,sl.layers.filter(l=>!l.hidden).map(l=>[l.type,l.kind||'',l.frameCut?.kind||'',l.frameBorder||0,l.color||'',l.x,l.y,l.w||0,l.h||0,l.rot||0].map(v=>typeof v==='number'?Math.round(v/3)*3:v)).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b)))]));
+  }
   function captionLines(text) {
     const words=String(text).trim().slice(0,120).split(/\s+/).flatMap(word=>word.match(/.{1,40}/g)||[]), lines=[''];
     words.forEach(word=>{const last=lines.length-1;if((lines[last]+' '+word).trim().length>40 && lines[last])lines.push(word);else lines[last]=(lines[last]+' '+word).trim()});
     return lines.join('\n');
   }
-  function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = '', heroPhotoId, backgroundMode = 'auto', frameTreatment = 'gallery', backgroundColor}) {
+  function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = '', heroPhotoId, backgroundMode = 'collection', frameTreatment = 'gallery', backgroundColor}) {
     if (!photos.length) return {slides: [], familyId: null, signature: ''};
     const random = seeded(seed), families = catalog.families;
     const weights = families.map(f => {
@@ -115,7 +127,7 @@
     const family = families.find(f=>f.id===familyId) || weighted(fresh.length?fresh:weights.filter(row=>row.weight>0), random).f;
     const gallery = families.find(f=>f.id==='gallery_book').variants;
     const pairs = families.find(f=>f.id==='editorial_pair').variants;
-    const bg = colors.resolve(backgroundMode,photos,backgroundColor);
+    const bg = backgroundMode==='collection'?style.background(family,photos,colors):colors.resolve(backgroundMode,photos,backgroundColor);
     const candidates = [];
     for (let attempt = 0; attempt < 12; attempt++) {
       let serial = 0, pool = [...photos], slides = [], totalFit = 0, fitCount = 0;
@@ -123,9 +135,27 @@
       const layer = (p, slot, c, index = 0) => ({id:uid(),type:'img',photo:p,x:slot.x*W,y:slot.y*H,w:slot.w*W,h:slot.h*H,
         rot:slot.rotation||0,zoom:1,offX:c.offX,offY:c.offY,z:10+index,hidden:false,locked:false,moveMode:'crop',storyAuto:true});
       const page = kind => ({id:uid(),bg,layers:[],palette:null,favorite:false,frameAuto:true,frameFamily:family.id,frameLayout:kind});
+      const seen=[];
+      function distinguish(sl){
+        const original=geometry(sl),memory=[...seen,...(previous?.recentGeometry||[])];
+        if(!memory.some(g=>distance(original,g)<.045)){seen.push(original);return}
+        const imgs=sl.layers.filter(l=>l.type==='img'),bounds=imgs.map(l=>{const a=l.rot*Math.PI/180,w=Math.abs(l.w*Math.cos(a))+Math.abs(l.h*Math.sin(a)),h=Math.abs(l.w*Math.sin(a))+Math.abs(l.h*Math.cos(a));return {x:l.x+l.w/2-w/2,y:l.y+l.h/2-h/2,w,h}});
+        const x=Math.min(...bounds.map(b=>b.x)),y=Math.min(...bounds.map(b=>b.y)),w=Math.max(...bounds.map(b=>b.x+b.w))-x,h=Math.max(...bounds.map(b=>b.y+b.h))-y;
+        const old=imgs.map(l=>({...l}));let best,merit=-1;
+        // A uniform transform preserves every source crop, face and inter-image gap.
+        for(let i=0;i<24;i++){
+          const ceiling=Math.min(.96,(W-34)/w,(H*.87-42)/h),floor=Math.min(sl.frameHero ? .83 : .68,ceiling*.8);
+          const k=floor+random()*(ceiling-floor),tx=17+random()*Math.max(0,W-34-w*k),ty=21+random()*Math.max(0,H*.87-42-h*k);
+          imgs.forEach((l,j)=>{l.x=tx+(old[j].x-x)*k;l.y=ty+(old[j].y-y)*k;l.w=old[j].w*k;l.h=old[j].h*k});
+          const g=geometry(sl),d=Math.min(...memory.map(other=>distance(g,other)));
+          if(d>merit){merit=d;best=imgs.map(l=>({x:l.x,y:l.y,w:l.w,h:l.h}))}
+        }
+        imgs.forEach((l,j)=>Object.assign(l,best[j]));sl.frameVariation=true;seen.push(geometry(sl));
+      }
       function append(v, assigned, front = false) {
         const sl = page(v.id);
         assigned.assigned.forEach((a, i) => sl.layers.push(layer(a.p,a.slot,a.c,i)));
+        distinguish(sl);
         if (v.captionRegion) sl.frameCaptionRegion = {...v.captionRegion};
         if (front) slides.splice(slides[0]?.frameHero ? 1 : 0,0,sl); else slides.push(sl);
         const used = new Set(assigned.assigned.map(a=>a.p.id));
@@ -142,6 +172,7 @@
         const slot=hero.faceAnalysisStatus!=='unavailable' && fit.safe && fit.retained>.82 ? box : fittedSlot(box,hero);
         const c=crop(hero,slot.w*W,slot.h*H),sl=page(cover.id);
         sl.layers.push(layer(hero,slot,c));sl.frameHero=true;
+        distinguish(sl);
         if(cover.captionRegion)sl.frameCaptionRegion={...cover.captionRegion};
         slides.push(sl);pool=pool.filter(p=>p.id!==hero.id);totalFit+=c.retained;fitCount++;
       }
@@ -156,7 +187,7 @@
         }
       }
       if (family.id === 'continuous') {
-        const variants = [...family.variants].sort(()=>random()-.5);
+        const variants = family.variants.filter(v=>v.pageSpan>1).map(v=>({v,key:random()})).sort((a,b)=>a.key-b.key).map(row=>row.v);
         for (const v of variants) {
           const p = [...pool].sort(()=>random()-.5).find(p=>canSpread(p,v.pageSpan));
           if (!p) continue;
@@ -186,6 +217,8 @@
           const native=family.variants.some(x=>x.id===v.id);
           const target=brief.density==='airy'?1.5:brief.density==='rich'?4:2.5;
           let score=a.fit*8+(native?9:0)-Math.abs(v.photoCount-target)*2+random()*8;
+          const shape=a.assigned.map(row=>[row.slot.x,row.slot.y,row.slot.w,row.slot.h,row.slot.rotation||0]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+          if([...seen,...(previous?.recentGeometry||[])].some(g=>distance(shape,g)<.045))score-=24;
           if (v.id===slides.at(-1)?.frameLayout) score-=5;
           if (family.id==='museum_notes' && slides.length && pool.length>=2 && pool.length<=3 && v.photoCount===2) score+=20;
           if (brief.purpose==='impact' && !slides.length && v.photoCount===1) score+=12;
@@ -207,8 +240,9 @@
       }
       for(const sl of slides){
         if(sl.storySpan)continue;
+        style.decorate(sl,family,uid,slides.indexOf(sl));
         if(frameTreatment==='mat'){
-          sl.layers.forEach(l=>{l.x=W*.045+l.x*.91;l.y=H*.045+l.y*.91;if(l.type==='img'){l.w*=.91;l.h*=.91}else if(l.type==='text'){l.w*=.91;l.size*=.91}});
+          sl.layers.forEach(l=>{l.x=W*.045+l.x*.91;l.y=H*.045+l.y*.91;if(l.type==='img'||l.type==='deco'){l.w*=.91;l.h*=.91}else if(l.type==='text'){l.w*=.91;l.size*=.91}});
           if(sl.frameCaptionRegion){const r=sl.frameCaptionRegion;sl.frameCaptionRegion={x:.045+r.x*.91,y:.045+r.y*.91,w:r.w*.91,h:r.h*.91}}
         }
         if(['print','darkroom'].includes(frameTreatment)){
@@ -236,13 +270,18 @@
         sl.layers.filter(l=>l.frameCaption).forEach(l=>{l.color=captionInk(bg)});
       }
       const sig=signature(slides);
+      const visual=visualSignature(slides);
       let score=totalFit/Math.max(fitCount,1)*12 + random()*4;
       if (previous?.signature===sig) score-=100;
       if (previous?.layouts?.join('|')===slides.map(sl=>sl.frameLayout).join('|')) score-=60;
-      candidates.push({slides,familyId:family.id,familyName:family.name,signature:sig,recentFamilies:[...recent.filter(id=>id!==family.id),family.id].slice(-3),score});
+      if(previous?.visualSignature===visual)score-=120;
+      const shapes=slides.filter(sl=>!sl.storySpan).map(geometry);
+      const opening=shapes[0],lastOpening=previous?.openingGeometry;
+      if(lastOpening)score+=Math.min(.2,distance(opening,lastOpening))*80;
+      candidates.push({slides,familyId:family.id,familyName:family.name,signature:sig,visualSignature:visual,openingGeometry:opening,recentGeometry:[...(previous?.recentGeometry||[]),...shapes].slice(-32),recentFamilies:[...recent.filter(id=>id!==family.id),family.id].slice(-3),score});
     }
     candidates.sort((a,b)=>b.score-a.score);
     return candidates[0];
   }
-  return {generate, crop, canSpread, signature, captionLines, heroScore, captionInk};
+  return {generate, crop, canSpread, signature, visualSignature, geometry, distance, captionLines, heroScore, captionInk};
 });

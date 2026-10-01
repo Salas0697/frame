@@ -23,8 +23,9 @@ function boot(entry='index.html', storageFailure=false) {
   w.URL.createObjectURL=file=>`blob:${file.name}-${file.size}`;
   w.URL.revokeObjectURL=()=>{};
   w.console.warn=()=>{};
-  w.Image=class {set src(value){this.naturalWidth=900;this.naturalHeight=1200;queueMicrotask(()=>this.onload?.())}};
+  w.Image=class {set src(value){this.naturalWidth=900;this.naturalHeight=1200;queueMicrotask(()=>this.onload?.())}removeAttribute(){}};
   w.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},getImageData(){return {data:new Uint8ClampedArray([80,105,140,255])}}});
+  w.HTMLCanvasElement.prototype.toBlob=function(callback,type){queueMicrotask(()=>callback(new w.Blob(['preview'],{type})))};
   const observers=[], Observer=w.MutationObserver;
   w.MutationObserver=class extends Observer {constructor(callback){super(callback);observers.push(this)}};
   if(storageFailure){Object.defineProperty(w,'localStorage',{get(){throw Error('storage blocked')}})}
@@ -139,7 +140,7 @@ test('template selector and caption use analyzed photos and survive persistence'
   try {
     h.select(batch(12));await h.complete();
     const select=h.d.querySelector('#templateFamily');
-    assert.equal(select.options.length,19);
+    assert.equal(select.options.length,require('../frame/template-catalog.json').families.length+1);
     select.value='museum_notes';select.dispatchEvent(new h.w.Event('change',{bubbles:true}));
     const s=h.w.__test.state();
     assert.deepEqual(Array.from(s.slides,sl=>sl.layers.filter(l=>l.type==='img').length),[1,2,9]);

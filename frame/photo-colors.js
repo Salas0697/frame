@@ -24,14 +24,16 @@
   return cluster(unique.flatMap(p=>(p.dominantColors||[]).map(c=>({...c,weight:c.weight/Math.max(1,unique.length)}))));
  }
  function pagePhotos(sl){return [...new Map(sl.layers.filter(l=>l.type==='img'&&!l.hidden).map(l=>[l.photo.id,l.photo])).values()]}
- function resolve(mode,photos,color){if(mode==='custom'&&/^#[\da-f]{6}$/i.test(color||''))return color;if(mode==='white')return '#ffffff';if(mode==='black')return '#101012';return palette(photos)[0]?.hex||'#ffffff'}
+ function resolve(mode,photos,color,family){if(mode==='collection'&&/^#[\da-f]{6}$/i.test(family?.background||''))return family.background;if(mode==='custom'&&/^#[\da-f]{6}$/i.test(color||''))return color;if(mode==='white')return '#ffffff';if(mode==='black')return '#101012';return palette(photos)[0]?.hex||'#ffffff'}
  function ink(color){const rgb=color.match(/^#([\da-f]{6})$/i);const c=rgb?rgb[1].match(/../g).map(v=>parseInt(v,16)):(color.match(/\d+/g)||[255,255,255]).map(Number);return c[0]*.2126+c[1]*.7152+c[2]*.0722<135?'#f7f7f5':'#222222'}
  function paint(sl,color){sl.bg=color;sl.layers.forEach(l=>{if(l.frameCaption||l.frameLocation)l.color=ink(color);if(l.frameBorder)l.frameBorderColor=ink(color)})}
  function apply(project,{scope='page',mode='custom',color,index=project.currentSlide||0}){
+  const catalog=typeof module==='object'&&module.exports?require('./template-catalog.json'):window.FRAME_TEMPLATE_CATALOG;
+  const family=sl=>catalog?.families.find(f=>f.id===sl.frameFamily);
   if(scope==='all'){
    project.frameBackground=mode;project.frameBackgroundColor=mode==='custom'?color:null;
-   const bg=resolve(mode,project.photos,color);project.slides.forEach(sl=>{delete sl.frameBackgroundOverride;paint(sl,bg)});
-  }else{const sl=project.slides[index];if(!sl)return;sl.frameBackgroundOverride={mode,color:mode==='custom'?color:null};paint(sl,resolve(mode,pagePhotos(sl),color))}
+   project.slides.forEach(sl=>{delete sl.frameBackgroundOverride;paint(sl,resolve(mode,project.photos,color,family(sl)))});
+  }else{const sl=project.slides[index];if(!sl)return;sl.frameBackgroundOverride={mode,color:mode==='custom'?color:null};paint(sl,resolve(mode,pagePhotos(sl),color,family(sl)))}
  }
  async function ensure(photos){
   for(const p of photos){if(p.dominantColors?.length)continue;
