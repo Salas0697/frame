@@ -1,3 +1,4 @@
+const {openTools}=require('../support/editor.cjs');
 const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test'),fs=require('node:fs/promises'),path=require('node:path');
 const {jpeg}=require('../support/gps-fixture.cjs');
@@ -17,7 +18,7 @@ async function choose(page,gps=true,append=false){
 }
 test('GPS enabled after an opt-out import reads persisted originals, then restores after reload',async({page})=>{
  await page.goto('/');await choose(page);await done(page);expect(await page.evaluate(()=>S.photos.every(p=>!p.locationScanned))).toBe(true);
- await page.getByText('Locación',{exact:true}).click();await page.locator('#locationPosition').selectOption('last');await note(page,'last');
+ await openTools(page);await page.getByText('Locación',{exact:true}).click();await page.locator('#locationPosition').selectOption('last');await note(page,'last');
  await page.reload();await page.locator('#resumeBtn').click();await note(page,'last');
 });
 async function done(page,surprise=false){await page.locator(surprise?'#journeySurprise':'#journeyCreate').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000})}
@@ -44,7 +45,7 @@ test('off skips metadata lookup; appended batch asks again and adds only one not
  const requests=[];page.on('request',r=>{if(r.url().includes('/assets/locations/'))requests.push(r.url())});
  await page.goto('/');await choose(page);await done(page);await expect(page.locator('#stage .locationLabel')).toHaveCount(0);expect(requests).toHaveLength(0);
  await choose(page,true,true);await page.locator('.journeyLocation summary').click();await page.locator('#journeyLocation').selectOption('last');await done(page);await note(page,'last');await expect(page.locator('#stats')).toContainText('16 fotos');
- await page.getByText('Locación',{exact:true}).click();await page.locator('#locationPosition').selectOption('off');await expect(page.locator('#stage .locationLabel')).toHaveCount(0);
+ await openTools(page);await page.getByText('Locación',{exact:true}).click();await page.locator('#locationPosition').selectOption('off');await expect(page.locator('#stage .locationLabel')).toHaveCount(0);
  await page.locator('#undoBtn').click();await note(page,'last');
 });
 test('no GPS falls back to editable place, position updates remain singular',async({page})=>{

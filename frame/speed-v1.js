@@ -13,7 +13,7 @@ const empty=document.createElement('div');empty.className='emptyQuick';empty.inn
 const photoInput=$('#photosInput');
 const undoAction=document.createElement('button');undoAction.className='fastToastAction';undoAction.textContent='Deshacer';document.body.appendChild(undoAction);
 let busy=false;
-function setBusy(on){busy=on;qb.classList.toggle('busy',on);const eb=$('#emptyAdd');if(eb)eb.disabled=on}
+function setBusy(on){busy=on;document.documentElement.dataset.projectBusy=String(on);qb.classList.toggle('busy',on);const eb=$('#emptyAdd');if(eb)eb.disabled=on}
 function fire(primary,fallback){const a=$(primary);if(a){a.click();return true}const b=fallback?$(fallback):null;if(b){b.click();return true}return false}
 function hideClutter(){const bar=$('#controlBar');if(bar)bar.classList.add('speedHidden');$('#randomBtn')?.classList.add('speedHidden');$('#slideBtn')?.classList.add('speedHidden')}
 function emptyState(){const isEmpty=!S.photos?.length||!S.slides?.length;studio?.classList.toggle('emptyStateFast',isEmpty);persistentExport.style.display=!isEmpty&&studio?.classList.contains('on')?'block':'none';empty.classList.toggle('on',isEmpty);if(isEmpty){const count=studio?.querySelector('.studioTop small');if(count)count.textContent='Nuevo proyecto'}return isEmpty}
@@ -29,8 +29,9 @@ $('#fastExport').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow();r
 $('#fastAdd').onclick=startPhotoFlow;$('#emptyAdd').onclick=startPhotoFlow;
 const exportTool=$('#exportBtn');if(exportTool)exportTool.onclick=()=>{if(!busy&&!exportBusy)openSheet('#exportSheet')};
 FrameLifecycle.on('beforeRender',emptyState);FrameLifecycle.on('afterSave',remember);remember();
-const storageNotice=document.createElement('p');storageNotice.id='storageNotice';storageNotice.hidden=true;storageNotice.setAttribute('role','status');storageNotice.style.cssText='margin:0 16px 12px;padding:12px;border:1px solid #8c7050;border-radius:12px;color:#efd5b2;font-size:12px;line-height:1.5';storageNotice.textContent='Este proyecto no está guardado en el dispositivo. Exporta tu carrusel antes de cerrar.';qb.after(storageNotice);
+const storageNotice=document.createElement('p');storageNotice.id='storageNotice';storageNotice.hidden=true;storageNotice.setAttribute('role','status');storageNotice.style.cssText='margin:0 16px 12px;padding:12px;border:1px solid #8c7050;border-radius:12px;color:#efd5b2;font-size:12px;line-height:1.5';storageNotice.innerHTML='<span>Este proyecto no está guardado en el dispositivo.</span><div class="storageActions"><button id="retrySaveBtn">Reintentar guardar</button><button id="backupNoticeBtn">Guardar copia</button></div>';qb.after(storageNotice);
 function syncStorageNotice(){storageNotice.hidden=S.storageReady!==false}
+window.FRAME_projectTask=async task=>{if(busy||exportBusy||window.framePhotoImport?.active)return;setBusy(true);try{return await task()}finally{setBusy(false)}};
 FrameLifecycle.on('afterRender',syncStorageNotice);FrameLifecycle.on('afterSave',syncStorageNotice);
 window.FRAME_newProject=async()=>{
   if(busy||exportBusy||window.framePhotoImport?.active)return;

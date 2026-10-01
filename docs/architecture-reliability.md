@@ -35,6 +35,13 @@ resultado para el commit exacto antes de fusionar.
 
 ## Siguiente iteración sugerida
 
+Las mejoras de esta tabla quedaron implementadas en la continuación de la entrega:
+copia `.frame` con originales, reintento de guardado, tres direcciones narrativas,
+comparación reversible y controles agrupados. El estado Guardado/Sin guardar queda
+visible en el editor. Se verifican restauración exacta de bytes y conservación del
+álbum al explorar o cerrar propuestas. Continúa pendiente una revisión con lector
+de pantalla y pruebas de compartir y memoria en iPhone físico.
+
 | Enfoque | Propuesta | Cómo comprobarla |
 |---|---|---|
 | Funcionalidad | Copia recuperable del proyecto y reintento de guardar | Recuperar fotos y ajustes tras recargar sin volver a importar |

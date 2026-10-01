@@ -42,6 +42,9 @@ y `playwright-report/`.
 | Análisis de rostro y adaptación de coordenadas | `frame/photo-analysis.js`, `frame/face-geometry.js` |
 | Acabados y recuperación de entrega | `frame/finish.js`, `frame/export-delivery.js` |
 | EXIF y nota de locación | `frame/photo-location.js` |
+| Copia portátil con originales | `frame/project-file.js` |
+| Ritmo, Calma y Contraste | `frame/narrative.js` |
+| Comparación y controles de proyecto | `frame/album-workspace.js` |
 | Editor y renderizadores | `frame/director/base.html`, módulos de interacción |
 | Runtime y entradas generadas | `tools/build.mjs` |
 
@@ -57,10 +60,25 @@ El workflow `FRAME quality` comprueba el build comprometido, ejecuta pruebas
 internas y Chromium/WebKit, y prepara el artefacto. En `main`, `deploy` depende de
 `verify`: una prueba fallida impide publicar por este workflow.
 
-Para que esa garantía sustituya la publicación antigua por rama, el administrador
+Para que esa garantía sustituya completamente la publicación antigua por rama, el administrador
 debe seleccionar **Settings → Pages → Source → GitHub Actions**. Además, configurar
 una regla para `main` que exija PR y el check `verify`. Estos ajustes administrativos
-no se activan al cambiar el YAML. No fusionar la migración sin revisar ambos.
+no se activan al cambiar el YAML. Mientras Pages siga usando una rama, también
+puede publicar por su workflow automático; comprobar el PR antes de fusionar.
+
+## Continuar y comparar un álbum
+
+**Comparar** conserva el álbum actual como opción A y prepara Ritmo, Calma y
+Contraste. Explorar o cerrar no modifica el proyecto; **Usar esta opción** aplica
+la propuesta como una transacción que se puede deshacer. Las páginas fijadas y
+las uniones panorámicas conservan su posición. En **Ajustes y proyecto** se puede
+cambiar la dirección narrativa, personalizar el acabado y guardar una copia.
+
+Una copia `.frame` contiene los originales y los ajustes, con un límite de 250 MB.
+Se puede abrir desde la pantalla inicial o el editor. Al restaurarla, se asignan
+nuevos IDs antes de guardar: un fallo no sobrescribe los originales del proyecto
+anterior. No depende de un servicio externo. El aviso **Sin guardar** ofrece
+reintentar la persistencia o descargar una copia del trabajo actual.
 
 La detección de rostros carga MediaPipe con versión fijada desde jsDelivr. Si no
 está disponible, se conserva la foto completa y se pide revisar los encuadres.

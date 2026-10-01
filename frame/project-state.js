@@ -9,7 +9,7 @@
     finish: 'clean', photoEditMode: 'crop', frameBrief: null,
     frameTemplateFamily: '', frameCaption: '', frameArtDirection: '',
     frameLastDesign: null, frameBackground: 'auto', frameBackgroundColor: null,
-    frameTreatment: 'gallery', heroPhotoId: null, frameLocation: null
+    frameTreatment: 'gallery', frameNarrative: '', heroPhotoId: null, frameLocation: null
   };
   const copy = value => JSON.parse(JSON.stringify(value));
   function snapshot(state) {

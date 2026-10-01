@@ -1,3 +1,4 @@
+const {openTools}=require('../support/editor.cjs');
 const {test,expect}=require('@playwright/test'),fs=require('node:fs/promises'),path=require('node:path'),{png}=require('../support/color-fixture.cjs');
 const dir=path.resolve('test-results/color-fixtures'),measured=['#dc141e','#14a03c','#2346be','#e6bd28'];
 test.beforeAll(async()=>{test.setTimeout(240000);await fs.mkdir(dir,{recursive:true});for(let i=0;i<8;i++)await fs.writeFile(path.join(dir,'color-'+i+'.png'),i%2?png([35,70,190],[230,189,40]):png([220,20,30],[20,160,60]))});
@@ -5,7 +6,7 @@ async function prepare(page){
  await page.goto('/');const wait=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await wait).setFiles(Array.from({length:8},(_,i)=>path.join(dir,'color-'+i+'.png')));
  await expect(page.locator('#templateJourney')).toBeVisible();expect(await page.locator('#backgroundSwatches button').count()).toBe(0);
  await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
- await page.evaluate(()=>S.frameBrief.purpose='memory');await page.locator('#templateFamily').selectOption('gallery_book');await page.getByText('Fondo y marco',{exact:true}).click();
+ await page.evaluate(()=>S.frameBrief.purpose='memory');await page.locator('#templateFamily').selectOption('gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();
 }
 test('measured swatches support page/all scope, undo, variation, PNG and restore without changing crops',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await prepare(page);
@@ -28,7 +29,7 @@ test('legacy saved projects recover measured colors from their originals and sug
  await prepare(page);
  await page.evaluate(()=>{for(const key of Object.keys(localStorage)){let p;try{p=JSON.parse(localStorage.getItem(key))}catch{}if(!p?.photos?.length||!p.slides)continue;for(const photo of p.photos)delete photo.dominantColors;for(const sl of p.slides)for(const l of sl.layers)if(l.photo)delete l.photo.dominantColors;localStorage.setItem(key,JSON.stringify(p))}});
  await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);expect(await page.evaluate(()=>S.photos.every(p=>p.dominantColors.length>=2))).toBeTruthy();
- await page.getByText('Fondo y marco',{exact:true}).click();const first=await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color));
+ await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();const first=await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color));
  const index=await page.evaluate(first=>S.slides.findIndex(sl=>!first.includes(sl.layers.find(l=>l.type==='img').photo.dominantColors[0].hex)),first);
  expect(index).toBeGreaterThan(0);await page.locator('#filmstrip .thumb').nth(index).click();await expect(page.locator('#backgroundSource')).toContainText('página '+(index+1));
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));expect(await page.evaluate(()=>S.currentSlide)).toBe(index);

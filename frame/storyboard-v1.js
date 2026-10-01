@@ -10,7 +10,7 @@
     const fixed=S.slides.map((sl,index)=>({sl,index})).filter(x=>x.sl.frameLocked);
     const retained=new Set(fixed.flatMap(x=>x.sl.layers.filter(l=>l.type==='img').map(l=>l.photo.id)));
     const available=S.photos.filter(p=>!retained.has(p.id));
-    const result = engine.generate({catalog, photos:available, brief:S.frameBrief,
+    const result = engine.generate({catalog, photos:available, brief:{...S.frameBrief,...(FrameNarrative.directions[S.frameNarrative]||{})},
       familyId:S.frameTemplateFamily, previous:S.frameLastDesign, seed, caption:S.frameCaption,heroPhotoId:S.heroPhotoId,backgroundMode:S.frameBackground,frameTreatment:S.frameTreatment,backgroundColor:S.frameBackgroundColor});
     result.slides.forEach(sl => {
       const photo = sl.layers.find(l=>l.type==='img')?.photo;
@@ -18,7 +18,7 @@
     });
     fixed.forEach(({sl,index})=>result.slides.splice(Math.min(index,result.slides.length),0,sl));
     result.slides.forEach((sl,index)=>{const override=sl.frameBackgroundOverride||pageColors.get(index);if(override){sl.frameBackgroundOverride=override;FramePhotoColors.paint(sl,FramePhotoColors.resolve(override.mode,FramePhotoColors.pagePhotos(sl),override.color))}});
-    S.slides = result.slides;
+    S.slides = FrameNarrative.sequence(result.slides,S.frameNarrative);
     S.frameArtDirection = result.familyId||S.frameArtDirection;
     S.frameLastDesign = {dir:S.frameArtDirection,signature:engine.signature(result.slides),layouts:result.slides.map(sl=>sl.frameLayout),recentFamilies:result.recentFamilies||S.frameLastDesign?.recentFamilies||[]};
     S.currentSlide = 0; S.selected = null; S.selectedType = null;
