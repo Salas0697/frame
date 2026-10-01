@@ -23,8 +23,9 @@ function boot(entry='index.html', storageFailure=false) {
   w.URL.createObjectURL=file=>`blob:${file.name}-${file.size}`;
   w.URL.revokeObjectURL=()=>{};
   w.console.warn=()=>{};
-  w.Image=class {set src(value){this.naturalWidth=900;this.naturalHeight=1200;queueMicrotask(()=>this.onload?.())}};
+  w.Image=class {set src(value){this.naturalWidth=900;this.naturalHeight=1200;queueMicrotask(()=>this.onload?.())}removeAttribute(){}};
   w.HTMLCanvasElement.prototype.getContext=()=>({drawImage(){},getImageData(){return {data:new Uint8ClampedArray([80,105,140,255])}}});
+  w.HTMLCanvasElement.prototype.toBlob=function(callback,type){queueMicrotask(()=>callback(new w.Blob(['preview'],{type})))};
   const observers=[], Observer=w.MutationObserver;
   w.MutationObserver=class extends Observer {constructor(callback){super(callback);observers.push(this)}};
   if(storageFailure){Object.defineProperty(w,'localStorage',{get(){throw Error('storage blocked')}})}

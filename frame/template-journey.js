@@ -16,6 +16,9 @@ const FrameJourney = (() => {
   function finish(value){
     const current=session;if(!current)return;
     session=null;modal.hidden=true;
+    // Hidden previews must not retain another decoded copy of every original.
+    modal.querySelectorAll('.journeyPage img').forEach(im=>im.removeAttribute('src'));
+    q('journeyCards').replaceChildren();current.designs.clear();delete current.photos;
     current.urls.forEach(url=>URL.revokeObjectURL(url));
     document.body.style.overflow=current.overflow;
     current.focus?.focus?.({preventScroll:true});current.resolve(value);
@@ -100,7 +103,14 @@ const FrameJourney = (() => {
       const im=await new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=()=>reject(Error('No se pudo abrir '+file.name));image.src=url});
       if(session!==current)return;
       const cv=document.createElement('canvas');cv.width=cv.height=42;const ctx=cv.getContext('2d');ctx.drawImage(im,0,0,42,42);
-      photos.push({id:'preview_'+i,name:file.name,url,width:im.naturalWidth,height:im.naturalHeight,aspect:im.naturalWidth/im.naturalHeight,dominantColors:FramePhotoColors.extract(ctx.getImageData(0,0,42,42).data)});
+      const width=im.naturalWidth,height=im.naturalHeight,dominantColors=FramePhotoColors.extract(ctx.getImageData(0,0,42,42).data);
+      const scale=Math.min(1,640/Math.max(width,height));cv.width=Math.max(1,Math.round(width*scale));cv.height=Math.max(1,Math.round(height*scale));ctx.drawImage(im,0,0,cv.width,cv.height);
+      const blob=await new Promise(resolve=>cv.toBlob(resolve,file.type==='image/jpeg'?'image/jpeg':'image/png',.88));
+      im.removeAttribute('src');cv.width=cv.height=0;URL.revokeObjectURL(url);
+      if(session!==current)return;
+      if(!blob)throw Error('No se pudo preparar la vista previa de '+file.name);
+      const previewUrl=URL.createObjectURL(blob);current.urls.push(previewUrl);
+      photos.push({id:'preview_'+i,name:file.name,url:previewUrl,width,height,aspect:width/height,dominantColors});
       q('journeyStatus').textContent=files.length+' fotos seleccionadas · '+(i+1)+'/'+files.length;
       await new Promise(r=>setTimeout(r,0));
     }

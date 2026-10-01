@@ -50,6 +50,8 @@ El arte gráfico se genera como capas nativas: selección, editor, miniaturas,
 comparación, copia .frame y PNG utilizan la misma composición. No se inventan
 leyendas, fechas ni lugares. La prueba de diversidad genera una lámina con los
 PNG reales de las 26 colecciones y comprueba cobertura y geometría.
+Las vistas previas del selector tienen como máximo 640 px en su lado mayor y
+liberan imágenes y URLs al cerrar; los originales se conservan para la exportación.
 
 ## Arquitectura vigente
 
