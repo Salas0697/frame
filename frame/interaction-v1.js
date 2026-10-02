@@ -109,7 +109,7 @@
       if(!st)return; const l=S.slides[slideI]?.layers.find(x=>x.id===id);if(!l||l.locked)return; e.preventDefault(); moved=true; const scale=sc(); const slide=el.closest('.slide'),g=ensureGuides(slide);
       if(e.touches.length>=2){const a=e.touches[0],b=e.touches[1],m=mid(a,b); if(st.mode!=='pinch'){st={mode:'pinch',sd:dist(a,b),sa:angle(a,b),ss:l.size,sr:l.rot,sx:m.x,sy:m.y,bx:l.x,by:l.y}}; l.size=clamp(st.ss*(dist(a,b)/Math.max(1,st.sd)),14,160); l.rot=st.sr+(angle(a,b)-st.sa)*180/Math.PI; l.x=st.bx+(m.x-st.sx)/scale; l.y=st.by+(m.y-st.sy)/scale; }
       else {const t=e.touches[0];l.x=st.bx+(t.clientX-st.sx)/scale;l.y=st.by+(t.clientY-st.sy)/scale}
-      const cx=l.x+l.w/2, cy=l.y+l.size*.48; const snapX=Math.abs(cx-170)<7, snapY=Math.abs(cy-212.5)<7; if(snapX)l.x=170-l.w/2;if(snapY)l.y=212.5-l.size*.48;g.v.classList.toggle('on',snapX);g.h.classList.toggle('on',snapY);
+      const cx=l.x+l.w/2, cy=l.y+l.size*.48; const snapX=Math.abs(cx-170)<7, snapY=Math.abs(cy-imgSize()[1]/2)<7; if(snapX)l.x=170-l.w/2;if(snapY)l.y=imgSize()[1]/2-l.size*.48;g.v.classList.toggle('on',snapX);g.h.classList.toggle('on',snapY);
       el.style.left=(l.x*scale)+'px';el.style.top=(l.y*scale)+'px';el.style.fontSize=(l.size*scale)+'px';el.style.transform=`rotate(${l.rot}deg)`;
     },{passive:false});
     const finish=()=>{if(!st)return;st=null;lockCanvas(false);el.classList.remove('isManipulating');const slide=el.closest('.slide');slide?.querySelectorAll('.snapGuide').forEach(g=>g.classList.remove('on'));saveProject();renderFilmstrip()};

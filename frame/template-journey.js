@@ -4,36 +4,37 @@ const FrameJourney = (() => {
   let session=null;
   const modal=document.createElement('div');modal.id='templateJourney';modal.hidden=true;
   modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-labelledby','journeyTitle');
-  modal.innerHTML=`<section class="journeyPanel"><header><div><small>FRAME / 02 · TEMPLATE</small><h2 id="journeyTitle">Encuentra tu mirada.</h2></div><button id="journeyCancel" aria-label="Cancelar selección de template">Cerrar</button></header><p id="journeyStatus" role="status"></p><p class="journeyHelp">Elige una historia visual. Puedes cambiarla después.</p><button id="journeyCuts" type="button" aria-pressed="false">Rasgadas y cortes · Nueva serie</button><input id="journeySearch" type="search" aria-label="Buscar colecciones" placeholder="Buscar por nombre o estilo…"><div id="journeyCards"></div><button id="journeyMore">Ver todos los templates</button><details class="journeyLocation"><summary>¿Incluir locación? <span>Opcional</span></summary><label>Mostrar una sola vez<select id="journeyLocation"><option value="off">Sin locación</option><option value="first">En la primera página</option><option value="middle">En el medio</option><option value="last">Al final</option></select></label><label>Lugar <input id="journeyPlace" maxlength="80" placeholder="Automático desde tus fotos"></label><small>Usamos el GPS de las fotos, si está disponible. Puedes escribir el lugar. Se procesa en este dispositivo.</small></details><footer><p id="journeyChoice" aria-live="polite">Preparando vistas previas…</p><div><button id="journeySurprise" disabled>Sorpréndeme</button><button id="journeyCreate" disabled>Crear carrusel ✦</button></div><small>Después ajustaremos composición y encuadres.</small></footer></section>`;
+  modal.innerHTML=`<section class="journeyPanel"><header><div><small>FRAME / 02 · TEMPLATE</small><h2 id="journeyTitle">Encuentra tu mirada.</h2></div><button id="journeyCancel" aria-label="Cancelar selección de template">Cerrar</button></header><p id="journeyStatus" role="status"></p><p class="journeyHelp">Elige una historia visual. Puedes cambiarla después.</p><button id="journeyCuts" type="button" aria-pressed="false">Rasgadas y cortes · Nueva serie</button><div class="journeyFilters" role="group" aria-label="Filtrar templates"><button data-filter="minimal">Minimalistas</button><button data-filter="mosaic">Mosaicos</button><button data-filter="panorama">Panorámicas</button></div><label class="journeyFormat">Formato<select id="journeyFormat" aria-label="Formato de vista previa"></select></label><button id="journeyPreview" disabled>Ampliar template elegido</button><input id="journeySearch" type="search" aria-label="Buscar colecciones" placeholder="Buscar por nombre o estilo…"><div id="journeyCards"></div><button id="journeyMore">Ver todos los templates</button><details class="journeyLocation"><summary>¿Incluir locación? <span>Opcional</span></summary><label>Mostrar una sola vez<select id="journeyLocation"><option value="off">Sin locación</option><option value="first">En la primera página</option><option value="middle">En el medio</option><option value="last">Al final</option></select></label><label>Lugar <input id="journeyPlace" maxlength="80" placeholder="Automático desde tus fotos"></label><small>Usamos el GPS de las fotos, si está disponible. Puedes escribir el lugar. Se procesa en este dispositivo.</small></details><footer><p id="journeyChoice" aria-live="polite">Preparando vistas previas…</p><div><button id="journeySurprise" disabled>Sorpréndeme</button><button id="journeyCreate" disabled>Crear carrusel ✦</button></div><small>Después ajustaremos composición y encuadres.</small></footer></section>`;
   document.body.append(modal);
+  const format=modal.querySelector('#journeyFormat');FrameFormats.options.forEach(f=>format.append(new Option(f.name,f.id)));format.onchange=()=>{if(session?.photos){session.designs.clear();renderCards(session)}};
   const search=modal.querySelector('#journeySearch');search.style.cssText='width:100%;box-sizing:border-box;margin-bottom:14px;min-height:44px;font-size:16px';
   const searchable=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
-  search.oninput=()=>{if(session){session.search=search.value;session.all=!!session.search;session.cuts=false;renderCards(session)}};
+  search.oninput=()=>{if(session){session.search=search.value;session.all=!!session.search;session.cuts=false;session.filter=null;if(session.ranked)renderCards(session)}};
   const q=id=>modal.querySelector('#'+id);
   const css=document.createElement('style');css.textContent=`
   #templateJourney[hidden]{display:none!important}#templateJourney{position:fixed;inset:0;z-index:2147483000;background:#0b0b0e;overflow:auto;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));color:#f4f1e9;overscroll-behavior:contain}.journeyPanel{max-width:860px;margin:auto}.journeyPanel header{display:flex;justify-content:space-between;align-items:center;gap:12px}.journeyPanel header small{font-size:10px;letter-spacing:.18em;color:#aaa}.journeyPanel h2{font:32px Georgia,serif;margin:10px 0}.journeyPanel button,.journeyPanel select,.journeyPanel input{min-height:44px;font:inherit;border:1px solid #424246;border-radius:12px;background:#202023;color:#f4f1e9;padding:10px 14px}.journeyPanel header button{font-size:12px}.journeyHelp,#journeyStatus{font-size:13px;color:#b5b5b9;line-height:1.5}.journeyHelp{margin:5px 0 18px}#journeyCards{display:grid;grid-template-columns:1fr;gap:14px}.journeyTemplate{text-align:left;overflow:hidden;position:relative}.journeyTemplate[aria-pressed=true]{border-color:#eee!important;box-shadow:0 0 0 1px #eee}.journeyTemplate strong{display:block;margin:10px 0 4px;font-size:17px}.journeyTemplate small{display:block;font-size:12px;color:#bababe;line-height:1.5}.journeyPreviews{display:flex;gap:5px;overflow:hidden}.journeyPage{position:relative;overflow:hidden;aspect-ratio:4/5;flex:0 0 calc((100% - 10px)/3);border-radius:1px}.journeyPage img{position:absolute;object-fit:cover;max-width:none}.journeyTag{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;color:#f2d4b1}#journeyCuts{width:100%;margin:0 0 14px;border-color:#938679;background:#2a2420}#journeyCuts[aria-pressed=true]{background:#ece4d7;color:#201b16}#journeyMore{width:100%;margin:14px 0}.journeyLocation{border-top:1px solid #333;padding:14px 0}.journeyLocation summary{cursor:pointer;font-size:14px;min-height:32px}.journeyLocation summary span{color:#939399;font-size:11px}.journeyLocation label{display:grid;gap:6px;font-size:12px;margin:10px 0}.journeyLocation select,.journeyLocation input{width:100%;box-sizing:border-box;font-size:16px}.journeyLocation small,.journeyPanel footer>small{display:block;font-size:11px;color:#a2a2a8;line-height:1.5}.journeyPanel footer{position:sticky;bottom:-12px;background:#111114;padding:10px 0 calc(12px + env(safe-area-inset-bottom));border-top:1px solid #444;backdrop-filter:blur(18px)}.journeyPanel footer>div{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}.journeyPanel footer small{margin-top:8px}#journeyCreate{background:#efece4;color:#141416;font-weight:700}.journeyPanel button:disabled{opacity:.4}#journeyChoice{font-size:12px;margin:0 0 8px}.journeyIntro{font-size:12px;color:#aaa;line-height:1.6;margin:0 0 18px}.journeyEditorHint{font-size:12px;color:#aaa;padding:0 16px 8px;line-height:1.5}@media(min-width:650px){#journeyCards{grid-template-columns:1fr 1fr}.journeyPanel footer{padding:14px}.journeyPanel h2{font-size:38px}}
-  `;document.head.append(css);
+  `;css.textContent+=`.journeyFilters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.journeyFilters button{font-size:12px;padding:0 10px}.journeyFilters button[aria-pressed=true]{background:#ece8dd;color:#111}.journeyFormat{display:flex;align-items:center;gap:12px;margin-bottom:12px;font-size:12px}.journeyFormat select{flex:1}#journeyPreview{width:100%;margin-bottom:12px;font-size:12px}#journeyLargePreview{max-width:580px;width:calc(100% - 24px);max-height:calc(100dvh - 24px);overflow:auto;box-sizing:border-box;background:#161619;color:#eee;border:1px solid #555;border-radius:18px;padding:14px}#journeyLargePreview::backdrop{background:#000d}#journeyLargePreview header{position:sticky;top:-14px;background:#161619;z-index:20;padding:10px 0}#largePreviewPages{display:grid;gap:16px;margin:16px 0}#largePreviewPages .journeyPage{display:block;width:100%}#chooseLargePreview{width:100%}`;document.head.append(css);
   function finish(value){
     const current=session;if(!current)return;
     session=null;modal.hidden=true;
     // Hidden previews must not retain another decoded copy of every original.
     modal.querySelectorAll('.journeyPage img').forEach(im=>im.removeAttribute('src'));
-    q('journeyCards').replaceChildren();current.designs.clear();delete current.photos;
+    if(preview.open)preview.close();q('largePreviewPages').replaceChildren();q('journeyCards').replaceChildren();current.designs.clear();delete current.photos;
     current.urls.forEach(url=>URL.revokeObjectURL(url));
     document.body.style.overflow=current.overflow;
     current.focus?.focus?.({preventScroll:true});current.resolve(value);
   }
   function answers(familyId){
     const position=q('journeyLocation').value;
-    return {familyId,purpose:'story',vibe:'natural',density:familyId==='contact_press'||familyId==='museum_notes'?'rich':'balanced',location:position==='off'?'no':'yes',locationPosition:position==='off'?'last':position,locationText:q('journeyPlace').value.trim()};
+    return {familyId,format:format.value,purpose:'story',vibe:'natural',density:familyId==='contact_press'||familyId==='museum_notes'?'rich':'balanced',location:position==='off'?'no':'yes',locationPosition:position==='off'?'last':position,locationText:q('journeyPlace').value.trim()};
   }
   q('journeyCancel').onclick=()=>finish(null);
   q('journeyCreate').onclick=()=>{if(session?.selected)finish(answers(session.selected))};
-  q('journeySurprise').onclick=()=>{if(session?.ranked?.length){const rows=session.search?session.ranked.filter(f=>searchable(f.name+' '+f.description).includes(searchable(session.search))):session.cuts?session.ranked.filter(f=>f.cutStyle):session.all?session.ranked:session.ranked.slice(0,4);finish(answers(rows[Math.floor(Math.random()*rows.length)].id))}};
-  q('journeyMore').onclick=()=>{if(session){search.value='';session.search='';session.all=session.cuts?false:!session.all;session.cuts=false;renderCards(session)}};
-  q('journeyCuts').onclick=()=>{if(session?.ranked){search.value='';session.search='';session.cuts=!session.cuts;session.all=false;renderCards(session)}};
+  q('journeySurprise').onclick=()=>{const rows=session&&visible(session);if(rows?.length)finish(answers(rows[Math.floor(Math.random()*rows.length)].id))};
+  q('journeyMore').onclick=()=>{if(session){search.value='';session.search='';session.all=session.cuts?false:!session.all;session.cuts=false;session.filter=null;renderCards(session)}};
+  q('journeyCuts').onclick=()=>{if(session?.ranked){search.value='';session.search='';session.cuts=!session.cuts;session.all=false;session.filter=null;renderCards(session)}};
   modal.addEventListener('keydown',event=>{
-    if(event.key==='Escape'){event.preventDefault();event.stopPropagation();finish(null)}
+    if(event.key==='Escape'&&!preview.open){event.preventDefault();event.stopPropagation();finish(null)}
     if(event.key==='Tab'){
       const els=[...modal.querySelectorAll('button,input,select,summary')].filter(el=>!el.disabled&&el.getClientRects().length),first=els[0],last=els.at(-1);
       if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus()}
@@ -51,11 +52,17 @@ const FrameJourney = (() => {
       (f.id==='color_editorial'?5:0)
     })).sort((a,b)=>b.match-a.match);
   }
+  const minimal=new Set(['gallery_book','full_bleed','offset_studies','margin_notes','linen_album','cinema_club']);
+  function visible(current){return current.ranked.filter(f=>(!current.search||searchable(f.name+' '+f.description).includes(searchable(current.search)))&&(!current.cuts||f.cutStyle)&&(!current.filter||(current.filter==='minimal'?minimal.has(f.id):current.filter==='panorama'?f.id==='continuous'||f.crossPage:f.variants.some(v=>v.photoCount>=4)))).filter((_,i)=>current.search||current.cuts||current.filter||current.all||i<4)}
+  modal.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{if(!session?.ranked)return;session.filter=session.filter===b.dataset.filter?null:b.dataset.filter;session.cuts=false;session.all=false;renderCards(session)});
+  const preview=document.createElement('dialog');preview.id='journeyLargePreview';preview.innerHTML='<header><b id="largePreviewTitle"></b><button id="closeLargePreview">Cerrar</button></header><div id="largePreviewPages"></div><button id="chooseLargePreview">Elegir este template</button>';modal.append(preview);
+  q('closeLargePreview').onclick=()=>preview.close();q('chooseLargePreview').onclick=()=>preview.close();
+  q('journeyPreview').onclick=()=>{if(!session?.selected)return;const card=modal.querySelector('[data-family="'+session.selected+'"]');q('largePreviewTitle').textContent=card.querySelector('strong').textContent;const pages=q('largePreviewPages');pages.replaceChildren(...[...card.querySelectorAll('.journeyPage')].map(p=>p.cloneNode(true)));preview.showModal()};
   function renderCards(current){
     if(session!==current)return;
     q('journeyCards').replaceChildren();
     q('journeyCuts').setAttribute('aria-pressed',String(!!current.cuts));
-    const rows=current.search?current.ranked.filter(f=>searchable(f.name+' '+f.description).includes(searchable(current.search))):current.cuts?current.ranked.filter(f=>f.cutStyle):current.all?current.ranked:current.ranked.slice(0,4);
+    const rows=visible(current);modal.querySelectorAll('[data-filter]').forEach(b=>b.setAttribute('aria-pressed',String(current.filter===b.dataset.filter)));
     if(!rows.some(f=>f.id===current.selected))current.selected=rows[0]?.id||null;
     for(const [index,family] of rows.entries()){
       const card=document.createElement('button');card.type='button';card.className='journeyTemplate';card.dataset.family=family.id;
@@ -63,13 +70,16 @@ const FrameJourney = (() => {
       const tag=document.createElement('span');tag.className='journeyTag';tag.textContent=family.cutStyle?'Rasgadas y cortes':index===0?'Recomendado para tus fotos':'Colección '+String(index+1).padStart(2,'0');
       const previews=document.createElement('span');previews.className='journeyPreviews';previews.setAttribute('aria-hidden','true');
       let design=current.designs.get(family.id);
-      if(!design){design=engine.generate({catalog,photos:current.photos,familyId:family.id,brief:answers(family.id),seed:current.seed,backgroundMode:S.frameBackground||'collection',backgroundColor:S.frameBackgroundColor,frameTreatment:S.frameTreatment||'gallery'});current.designs.set(family.id,design)}
+      if(!design){design=engine.generate({catalog,photos:current.photos,familyId:family.id,brief:answers(family.id),seed:current.seed,backgroundMode:S.frameBackground||'collection',backgroundColor:S.frameBackgroundColor,frameTreatment:S.frameTreatment||'gallery',format:format.value});current.designs.set(family.id,design)}
       for(const sl of design.slides.slice(0,3)){
-        const page=document.createElement('span');page.className='journeyPage';page.style.background=sl.bg;
-        for(const layer of [...sl.layers].filter(l=>l.type==='img'||l.type==='deco').sort((a,b)=>a.z-b.z)){
-          const im=document.createElement(layer.type==='img'?'img':'span');if(layer.type==='img'){im.src=layer.photo.url;im.alt=''}im.style.cssText=`position:absolute;left:${layer.x/340*100}%;top:${layer.y/425*100}%;width:${layer.w/340*100}%;height:${layer.h/425*100}%;transform:rotate(${layer.rot||0}deg);object-position:${50+(layer.offX||0)}% ${50+(layer.offY||0)}%;`;
-          if(layer.frameCut)im.style.clipPath=FrameCuts.css(layer.frameCut);if(layer.type==='deco'){im.style.background=layer.color;im.style.borderRadius=layer.kind==='circle'?'50%':'0'}
-          page.append(im);
+        const [W,H]=FrameFormats.dimensions(format.value),page=document.createElement('span');page.className='journeyPage';page.style.background=sl.bg;page.style.aspectRatio=W+'/'+H;
+        for(const layer of [...sl.layers].filter(l=>!l.hidden).sort((a,b)=>a.z-b.z)){
+          const box=document.createElement('span');box.style.cssText=`position:absolute;left:${layer.x/W*100}%;top:${layer.y/H*100}%;width:${layer.w/W*100}%;height:${(layer.h||layer.size)/H*100}%;transform:rotate(${layer.rot||0}deg);overflow:hidden;`;
+          if(layer.frameCut)box.style.clipPath=FrameCuts.css(layer.frameCut);
+          if(layer.type==='img'){const im=document.createElement('img'),g=FrameCrop.geometry(layer,layer.w,layer.h);im.src=layer.photo.url;im.alt='';im.style.cssText=`position:absolute;left:${g.x/layer.w*100}%;top:${g.y/layer.h*100}%;width:${g.w/layer.w*100}%;height:${g.h/layer.h*100}%;`;box.append(im);if(layer.frameBorder)box.style.outline='1px solid '+layer.frameBorderColor}
+          else if(layer.type==='deco'){box.style.background=layer.color;box.style.borderRadius=layer.kind==='circle'?'50%':'0'}
+          else{box.textContent=layer.text;box.style.fontFamily=ff(layer.font);box.style.color=layer.color;box.style.fontSize='5px'}
+          page.append(box);
         }
         previews.append(page);
       }
@@ -80,22 +90,30 @@ const FrameJourney = (() => {
       q('journeyCards').append(card);
     }
     q('journeyMore').textContent=current.all||current.cuts?'Ver recomendados':'Explorar los '+catalog.families.length+' templates';
-    q('journeyMore').hidden=false;q('journeyCreate').disabled=q('journeySurprise').disabled=!rows.length;
+    q('journeyMore').hidden=false;q('journeyPreview').disabled=q('journeyCreate').disabled=q('journeySurprise').disabled=!rows.length;
     q('journeyChoice').textContent=rows.length?current.ranked.find(f=>f.id===current.selected)?.name+' · '+current.photos.length+' fotos':'No hay colecciones con ese nombre o estilo.';
   }
   function open(){
     if(session)throw Error('Template selection already active');
     let resolve;const promise=new Promise(r=>resolve=r);
-    const current={resolve,urls:[],overflow:document.body.style.overflow,focus:document.activeElement,designs:new Map(),seed:Date.now()>>>0};session=current;search.value='';
+    const current={resolve,urls:[],overflow:document.body.style.overflow,focus:document.activeElement,designs:new Map(),seed:Date.now()>>>0};session=current;search.value='';format.value=S.frameFormat||'4:5';q('journeyPreview').disabled=true;
     modal.hidden=false;modal.scrollTop=0;document.body.style.overflow='hidden';
     q('journeyCuts').setAttribute('aria-pressed','false');q('journeyCards').replaceChildren();q('journeyStatus').textContent='Preparando tus fotos…';q('journeyChoice').textContent='Preparando vistas previas…';
-    q('journeyCreate').disabled=q('journeySurprise').disabled=true;q('journeyMore').hidden=true;
+    q('journeyCreate').disabled=q('journeySurprise').disabled=true;modal.querySelectorAll('[data-filter]').forEach(b=>b.disabled=true);q('journeyCuts').disabled=true;q('journeyMore').hidden=true;
     q('journeyLocation').value=S.frameLocation?.enabled?S.frameLocation.position:'off';q('journeyPlace').value=S.frameLocation?.source==='manual'?S.frameLocation.text:'';
     q('journeyCancel').focus({preventScroll:true});return {current,promise};
   }
-  function ready(current,photos){if(session!==current)return;current.photos=photos;current.ranked=rank(photos);current.selected=current.ranked[0].id;q('journeyStatus').textContent=photos.length+' fotos · Vistas previas con tus imágenes';renderCards(current)}
+  function ready(current,photos){if(session!==current)return;modal.querySelectorAll('[data-filter]').forEach(b=>b.disabled=false);q('journeyCuts').disabled=false;current.photos=photos;current.ranked=rank(photos);current.selected=current.ranked[0].id;q('journeyStatus').textContent=photos.length+' fotos · Vistas previas con tus imágenes';renderCards(current)}
+  async function prepareSaved(photos,current){
+    const rows=[];
+    for(const photo of photos){
+      if(session!==current)return [];
+      const im=await loadImage(photo.url),cv=document.createElement('canvas'),scale=Math.min(1,640/Math.max(im.naturalWidth,im.naturalHeight));cv.width=Math.max(1,Math.round(im.naturalWidth*scale));cv.height=Math.max(1,Math.round(im.naturalHeight*scale));cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+      const blob=await new Promise(resolve=>cv.toBlob(resolve,'image/jpeg',.88));im.removeAttribute('src');cv.width=cv.height=0;if(session!==current)return [];if(!blob)throw Error('Preview unavailable');const url=URL.createObjectURL(blob);current.urls.push(url);rows.push({...photo,url});await new Promise(resolve=>setTimeout(resolve,0));
+    }return rows;
+  }
   async function prepare(files,current){
-    const photos=[...S.photos];
+    const photos=await prepareSaved(S.photos,current);
     // Decode sequentially and sample only 42px. No face detector, GPS or full analysis here.
     for(let i=0;i<files.length;i++){
       if(session!==current)return;
@@ -117,6 +135,6 @@ const FrameJourney = (() => {
     ready(current,photos);
   }
   function selectFiles(files){const {current,promise}=open();void prepare(files,current).catch(error=>{if(session===current){q('journeyStatus').textContent=error.message+'. Cierra y elige imágenes compatibles.';q('journeyChoice').textContent='Tu proyecto se conserva.'}});return promise}
-  function choose(photos){const {current,promise}=open();try{ready(current,photos)}catch{finish(null)}return promise}
+  function choose(photos){const {current,promise}=open();void prepareSaved(photos,current).then(rows=>ready(current,rows)).catch(()=>finish(null));return promise}
   return {selectFiles,choose};
 })();

@@ -7,11 +7,11 @@
     if (!S.photos?.length) return;
     const seed = (Date.now() + (++generation) * 7919 + Math.floor(Math.random()*1e6)) >>> 0;
     const pageColors=new Map(S.slides.map((sl,index)=>[index,sl.frameBackgroundOverride]).filter(([,v])=>v));
-    const fixed=S.slides.map((sl,index)=>({sl,index})).filter(x=>x.sl.frameLocked);
+    const fixed=S.slides.map((sl,index)=>({sl,index})).filter(x=>x.sl.frameLocked||x.sl.layers.some(l=>l.type==='img'&&l.locked));
     const retained=new Set(fixed.flatMap(x=>x.sl.layers.filter(l=>l.type==='img').map(l=>l.photo.id)));
-    const available=S.photos.filter(p=>!retained.has(p.id));
+    const available=S.photos.filter(p=>!retained.has(p.id)&&!(S.frameInactivePhotoIds||[]).includes(p.id));
     const result = engine.generate({catalog, photos:available, brief:{...S.frameBrief,...(FrameNarrative.directions[S.frameNarrative]||{})},
-      familyId:S.frameTemplateFamily, previous:S.frameLastDesign, seed, caption:S.frameCaption,heroPhotoId:S.heroPhotoId,backgroundMode:S.frameBackground,frameTreatment:S.frameTreatment,backgroundColor:S.frameBackgroundColor});
+      familyId:S.frameTemplateFamily, previous:S.frameLastDesign, seed, caption:S.frameCaption,heroPhotoId:S.heroPhotoId,backgroundMode:S.frameBackground,frameTreatment:S.frameTreatment,backgroundColor:S.frameBackgroundColor,format:S.frameFormat});
     result.slides.forEach(sl => {
       const photo = sl.layers.find(l=>l.type==='img')?.photo;
       sl.palette = palFromPhoto(photo);
@@ -21,7 +21,7 @@
     S.slides = FrameNarrative.sequence(result.slides,S.frameNarrative);
     S.frameArtDirection = result.familyId||S.frameArtDirection;
     S.frameLastDesign = {dir:S.frameArtDirection,signature:engine.signature(result.slides),visualSignature:engine.visualSignature(S.slides),openingGeometry:engine.geometry(S.slides[0]||{layers:[]}),recentGeometry:result.recentGeometry||S.frameLastDesign?.recentGeometry||[],layouts:result.slides.map(sl=>sl.frameLayout),recentFamilies:result.recentFamilies||S.frameLastDesign?.recentFamilies||[]};
-    S.currentSlide = 0; S.selected = null; S.selectedType = null;
+    S.currentSlide = Math.min(S.currentSlide||0,S.slides.length-1); S.selected = null; S.selectedType = null;
   }
   window.FRAME_togglePageLock = index => {
     const sl=S.slides[index];if(!sl)return;pushHistory();
@@ -102,7 +102,7 @@
     if(browse.disabled||!S.photos.length)return;
     const choice=await FrameJourney.choose(S.photos);
     if(!choice)return;
-    pushHistory();S.frameTemplateFamily=choice.familyId;S.frameBrief=choice;
+    pushHistory();S.frameTemplateFamily=choice.familyId;S.frameBrief=choice;window.FRAME_setFormat?.(choice.format,false);
     S.frameLocation=FramePhotoLocation.settings(choice,S.photos);
     buildStory();renderAll();saveProject();
   };
@@ -138,7 +138,7 @@
     if (sl && S.frameCaption) {
       const r=sl.frameCaptionRegion;
       const lines=window.FrameTemplateEngine.captionLines(S.frameCaption);
-      const l=makeText(lines,r.x*340,r.y*425,r.w*340,6.5,engine.captionInk(sl.bg),'mono',400,0);
+      const [W,H]=imgSize();const l=makeText(lines,r.x*W,r.y*H,r.w*W,6.5,engine.captionInk(sl.bg),'mono',400,0);
       l.frameCaption=true;l.userTouched=true;sl.layers.push(l);
     }
     renderAll();saveProject();

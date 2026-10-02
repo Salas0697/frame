@@ -57,7 +57,7 @@ window.framePhotoImport=new PhotoImportController({
   yieldToPaint:()=>new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0))),
   analyzePhotos:FramePhotoAnalysis.analyzePhotos,
   checkpoint:()=>({state:clone(S),studio:studio.classList.contains('on')}),
-  commitPhotos:(photos,answers)=>{S.photos=[...S.photos,...photos];S.frameBrief=answers;S.frameTemplateFamily=answers.familyId;S.frameLocation=FramePhotoLocation.settings(answers,S.photos);persistenceWarning=false;S.storageReady=false},
+  commitPhotos:(photos,answers)=>{S.photos=[...S.photos,...photos];S.frameBrief=answers;window.FRAME_setFormat?.(answers.format||S.frameFormat,false);S.frameTemplateFamily=answers.familyId;S.frameLocation=FramePhotoLocation.settings(answers,S.photos);persistenceWarning=false;S.storageReady=false},
   generateStoryboard:()=>buildSlides(),
   render:showStudio,
   persistPhotos:async(files,photos)=>{

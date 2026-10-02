@@ -6,7 +6,7 @@
 })(typeof window !== 'undefined' ? window : globalThis, () => {
   const defaults = {
     slides: [], currentSlide: 0, randomMode: 'all', showSafe: false,
-    finish: 'clean', photoEditMode: 'crop', frameBrief: null,
+    frameInactivePhotoIds: [], frameFormat: '4:5', frameVariationScope: 'all', finish: 'clean', photoEditMode: 'crop', frameBrief: null,
     frameTemplateFamily: '', frameCaption: '', frameArtDirection: '',
     frameLastDesign: null, frameBackground: 'collection', frameBackgroundColor: null,
     frameTreatment: 'gallery', frameNarrative: '', heroPhotoId: null, frameLocation: null

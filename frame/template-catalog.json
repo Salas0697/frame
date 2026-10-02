@@ -2887,7 +2887,7 @@
     {
       "id": "torn_horizon",
       "name": "Horizonte Rasgado",
-      "description": "Franjas fotográficas separadas por bordes de papel.",
+      "description": "Fotos con bordes rasgados, capas de papel y panorámicas que continúan entre páginas.",
       "priority": 2,
       "initialWeight": 7,
       "preferPurpose": [
@@ -3021,6 +3021,34 @@
             "w": 0.84,
             "h": 0.055
           }
+        },
+        {
+          "id": "horizon_spread_2",
+          "photoCount": 1,
+          "pageSpan": 2,
+          "slots": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 2,
+              "h": 1,
+              "rotation": 0
+            }
+          ]
+        },
+        {
+          "id": "horizon_spread_3",
+          "photoCount": 1,
+          "pageSpan": 3,
+          "slots": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 3,
+              "h": 1,
+              "rotation": 0
+            }
+          ]
         }
       ],
       "covers": [
@@ -3065,7 +3093,8 @@
           }
         }
       ],
-      "visualRecipe": "horizon"
+      "visualRecipe": "horizon",
+      "crossPage": true
     },
     {
       "id": "cut_diagonal",
