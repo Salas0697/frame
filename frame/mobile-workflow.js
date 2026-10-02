@@ -21,15 +21,16 @@
   scope.onchange=()=>{S.frameVariationScope=scope.value;sync();saveProject()};
   function group(index){const sl=S.slides[index];return sl?.storySpan?S.slides.filter(s=>s.storySpan?.photoId===sl.storySpan.photoId):sl?[sl]:[]}
   window.FRAME_rebuildStory=()=>{
-    if(window.framePhotoImport?.active||exportBusy||!S.photos.length)return;
-    if(S.frameVariationScope!=='page'){if(S.slides.every(fixed)){toast('Libera una página o foto para variar');return}pushHistory();window.FRAME_generateStory();renderAll();return}
-    const pages=group(S.currentSlide);if(!pages.length||pages.some(fixed)){toast('Libera esta página o foto para variar');return}
+    if(window.framePhotoImport?.active||exportBusy||!S.photos.length)return false;
+    if(S.frameVariationScope!=='page'){if(S.slides.every(fixed)){toast('Libera una página o foto para variar');return false}pushHistory();window.FRAME_generateStory();renderAll();return true}
+    const pages=group(S.currentSlide);if(!pages.length||pages.some(fixed)){toast('Libera esta página o foto para variar');return false}
     const ids=new Set(pages.flatMap(sl=>sl.layers.filter(l=>l.type==='img').map(l=>l.photo.id))),photos=S.photos.filter(p=>ids.has(p.id)),first=S.slides.indexOf(pages[0]);
+    if(!photos.length){toast('Añade una foto a esta página antes de variar');return false}
     const result=FrameTemplateEngine.generate({catalog:FRAME_TEMPLATE_CATALOG,photos,familyId:S.frameTemplateFamily||pages[0].frameFamily,format:S.frameFormat,brief:{...S.frameBrief,purpose:'showcase'},previous:{signature:FrameTemplateEngine.signature(pages),visualSignature:FrameTemplateEngine.visualSignature(pages),layouts:pages.map(sl=>sl.frameLayout),recentGeometry:pages.map(FrameTemplateEngine.geometry)},seed:Date.now()>>>0,backgroundMode:S.frameBackground,backgroundColor:S.frameBackgroundColor,frameTreatment:S.frameTreatment});
     if(pages[0].frameBackgroundOverride)result.slides.forEach(sl=>{sl.frameBackgroundOverride=clone(pages[0].frameBackgroundOverride);FramePhotoColors.paint(sl,FramePhotoColors.resolve(sl.frameBackgroundOverride.mode,FramePhotoColors.pagePhotos(sl),sl.frameBackgroundOverride.color))});
     // User notes travel with this page; location has a separate global reservation.
     const notes=pages.flatMap(sl=>sl.layers.filter(l=>l.type==='text'&&!l.frameLocation));if(notes.length)result.slides[0].layers.push(...clone(notes));
-    pushHistory();S.slides.splice(first,pages.length,...result.slides);S.currentSlide=first;S.selected=S.selectedType=null;renderAll();toast('Esta página tiene otra composición');
+    pushHistory();S.slides.splice(first,pages.length,...result.slides);S.currentSlide=first;S.selected=S.selectedType=null;renderAll();toast('Esta página tiene otra composición');return true;
   };
   $('#remixSlideBtn').onclick=()=>{S.frameVariationScope='page';window.FRAME_rebuildStory()};
 
