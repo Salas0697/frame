@@ -39,5 +39,7 @@ test('cancelling a replacement during analysis never commits its photo',async({p
 });
 test('changing format retains the chosen visual family, hand edits and panorama groups',async({page})=>{
  await start(page);const family=await page.evaluate(()=>S.frameArtDirection);await page.locator('#stage .imgLayer').first().tap();await page.locator('#uxEdit').click();await page.locator('#peContain').click();await page.locator('#peDone').click();const edited=await page.evaluate(()=>({id:currentLayer().id,photo:currentLayer().photo.id,ratio:currentLayer().w/currentLayer().h}));
- await designSelect(page,'#frameFormat','1:1');expect(await page.evaluate(()=>S.frameArtDirection)).toBe(family);expect(await page.evaluate(id=>{const l=S.slides.flatMap(sl=>sl.layers).find(l=>l.id===id);return {photo:l.photo.id,ratio:l.w/l.h,fit:l.fit}},edited.id)).toEqual({photo:edited.photo,ratio:edited.ratio,fit:'contain'});expect(await page.evaluate(()=>S.slides.some(sl=>sl.frameLocked))).toBe(false);
+ await designSelect(page,'#frameFormat','1:1');expect(await page.evaluate(()=>S.frameArtDirection)).toBe(family);
+ const retained=await page.evaluate(id=>{const l=S.slides.flatMap(sl=>sl.layers).find(l=>l.id===id);return {photo:l.photo.id,ratio:l.w/l.h,fit:l.fit}},edited.id);
+ expect(retained.photo).toBe(edited.photo);expect(retained.fit).toBe('contain');expect(retained.ratio).toBeCloseTo(edited.ratio,12);expect(await page.evaluate(()=>S.slides.some(sl=>sl.frameLocked))).toBe(false);
 });
