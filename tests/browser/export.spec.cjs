@@ -1,3 +1,4 @@
+const {designSelect,editorClick,closeDesign}=require('../support/editor.cjs');
 const {openTools}=require('../support/editor.cjs');
 const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test');
@@ -8,7 +9,7 @@ test.beforeAll(async()=>{test.setTimeout(240000);await fs.mkdir(dir,{recursive:t
 async function prepare(page){
  await page.goto('/');const picker=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await picker).setFiles(Array.from({length:12},(_,i)=>path.join(dir,i+'.png')));
  await expect(page.locator('#journeyCreate')).toBeEnabled();await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
- await page.locator('#templateFamily').selectOption('gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#backgroundSwatches button').last().click();
+ await designSelect(page,'#templateFamily','gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#backgroundSwatches button').last().click();await closeDesign(page);
 }
 test('every exported photograph survives custom backgrounds and surfaces are released',async({page})=>{
  await prepare(page);
@@ -92,7 +93,7 @@ test('twelve-megapixel photographs export as visible photographs on every page',
  await page.goto('/');const picker=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await picker).setFiles(Array.from({length:9},(_,i)=>originals[i%3]));await expect(page.locator('#journeyCreate')).toBeEnabled();
  await expect.poll(()=>page.locator('.journeyPage img').evaluateAll(els=>els.length>0&&els.every(im=>im.complete&&Math.max(im.naturalWidth,im.naturalHeight)>0&&Math.max(im.naturalWidth,im.naturalHeight)<=640))).toBeTruthy();
  await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});await expect(page.locator('#journeyCards img')).toHaveCount(0);
- await page.locator('#templateFamily').selectOption('gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#backgroundSwatches button').last().click();
+ await designSelect(page,'#templateFamily','gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#backgroundSwatches button').last().click();await closeDesign(page);
  const images=await page.evaluate(async()=>{
   const results=[];
   for(let i=0;i<S.slides.length;i++){

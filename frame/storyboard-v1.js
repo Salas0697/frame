@@ -6,6 +6,7 @@
   function buildStory() {
     if (!S.photos?.length) return;
     const seed = (Date.now() + (++generation) * 7919 + Math.floor(Math.random()*1e6)) >>> 0;
+    const pageDesigns=new Map(S.slides.map((sl,index)=>[index,sl.frameDesignOverride]).filter(([,v])=>v));
     const pageColors=new Map(S.slides.map((sl,index)=>[index,sl.frameBackgroundOverride]).filter(([,v])=>v));
     const fixed=S.slides.map((sl,index)=>({sl,index})).filter(x=>x.sl.frameLocked||x.sl.layers.some(l=>l.type==='img'&&l.locked));
     const retained=new Set(fixed.flatMap(x=>x.sl.layers.filter(l=>l.type==='img').map(l=>l.photo.id)));
@@ -18,6 +19,7 @@
     });
     fixed.forEach(({sl,index})=>result.slides.splice(Math.min(index,result.slides.length),0,sl));
     result.slides.forEach((sl,index)=>{const override=sl.frameBackgroundOverride||pageColors.get(index);if(override){sl.frameBackgroundOverride=override;FramePhotoColors.paint(sl,FramePhotoColors.resolve(override.mode,FramePhotoColors.pagePhotos(sl),override.color,catalog.families.find(f=>f.id===sl.frameFamily)))}});
+    result.slides.forEach((sl,index)=>{if(fixed.some(x=>x.sl===sl))return;const settings=pageDesigns.get(index)||S.frameDesign;if(pageDesigns.has(index))sl.frameDesignOverride=clone(settings);FrameDesign.apply(sl,settings)});
     S.slides = FrameNarrative.sequence(result.slides,S.frameNarrative);
     S.frameArtDirection = result.familyId||S.frameArtDirection;
     S.frameLastDesign = {dir:S.frameArtDirection,signature:engine.signature(result.slides),visualSignature:engine.visualSignature(S.slides),openingGeometry:engine.geometry(S.slides[0]||{layers:[]}),recentGeometry:result.recentGeometry||S.frameLastDesign?.recentGeometry||[],layouts:result.slides.map(sl=>sl.frameLayout),recentFamilies:result.recentFamilies||S.frameLastDesign?.recentFamilies||[]};

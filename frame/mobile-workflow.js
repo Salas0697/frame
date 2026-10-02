@@ -29,6 +29,7 @@
     const result=FrameTemplateEngine.generate({catalog:FRAME_TEMPLATE_CATALOG,photos,familyId:S.frameTemplateFamily||pages[0].frameFamily,format:S.frameFormat,brief:{...S.frameBrief,purpose:'showcase'},previous:{signature:FrameTemplateEngine.signature(pages),visualSignature:FrameTemplateEngine.visualSignature(pages),layouts:pages.map(sl=>sl.frameLayout),recentGeometry:pages.map(FrameTemplateEngine.geometry)},seed:Date.now()>>>0,backgroundMode:S.frameBackground,backgroundColor:S.frameBackgroundColor,frameTreatment:S.frameTreatment});
     if(pages[0].frameBackgroundOverride)result.slides.forEach(sl=>{sl.frameBackgroundOverride=clone(pages[0].frameBackgroundOverride);FramePhotoColors.paint(sl,FramePhotoColors.resolve(sl.frameBackgroundOverride.mode,FramePhotoColors.pagePhotos(sl),sl.frameBackgroundOverride.color))});
     // User notes travel with this page; location has a separate global reservation.
+    result.slides.forEach(sl=>{const settings=pages[0].frameDesignOverride||S.frameDesign;if(pages[0].frameDesignOverride)sl.frameDesignOverride=clone(settings);FrameDesign.apply(sl,settings)});
     const notes=pages.flatMap(sl=>sl.layers.filter(l=>l.type==='text'&&!l.frameLocation));if(notes.length)result.slides[0].layers.push(...clone(notes));
     pushHistory();S.slides.splice(first,pages.length,...result.slides);S.currentSlide=first;S.selected=S.selectedType=null;renderAll();toast('Esta página tiene otra composición');return true;
   };

@@ -4,7 +4,7 @@ const FrameJourney = (() => {
   let session=null;
   const modal=document.createElement('div');modal.id='templateJourney';modal.hidden=true;
   modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-labelledby','journeyTitle');
-  modal.innerHTML=`<section class="journeyPanel"><header><div><small>FRAME / 02 · TEMPLATE</small><h2 id="journeyTitle">Encuentra tu mirada.</h2></div><button id="journeyCancel" aria-label="Cancelar selección de template">Cerrar</button></header><p id="journeyStatus" role="status"></p><p class="journeyHelp">Elige una historia visual. Puedes cambiarla después.</p><button id="journeyCuts" type="button" aria-pressed="false">Rasgadas y cortes · Nueva serie</button><div class="journeyFilters" role="group" aria-label="Filtrar templates"><button data-filter="minimal">Minimalistas</button><button data-filter="mosaic">Mosaicos</button><button data-filter="panorama">Panorámicas</button></div><label class="journeyFormat">Formato<select id="journeyFormat" aria-label="Formato de vista previa"></select></label><button id="journeyPreview" disabled>Ampliar template elegido</button><input id="journeySearch" type="search" aria-label="Buscar colecciones" placeholder="Buscar por nombre o estilo…"><div id="journeyCards"></div><button id="journeyMore">Ver todos los templates</button><details class="journeyLocation"><summary>¿Incluir locación? <span>Opcional</span></summary><label>Mostrar una sola vez<select id="journeyLocation"><option value="off">Sin locación</option><option value="first">En la primera página</option><option value="middle">En el medio</option><option value="last">Al final</option></select></label><label>Lugar <input id="journeyPlace" maxlength="80" placeholder="Automático desde tus fotos"></label><small>Usamos el GPS de las fotos, si está disponible. Puedes escribir el lugar. Se procesa en este dispositivo.</small></details><footer><p id="journeyChoice" aria-live="polite">Preparando vistas previas…</p><div><button id="journeySurprise" disabled>Sorpréndeme</button><button id="journeyCreate" disabled>Crear carrusel ✦</button></div><small>Después ajustaremos composición y encuadres.</small></footer></section>`;
+  modal.innerHTML=`<section class="journeyPanel"><header><div><small>FRAME / COLECCIONES</small><h2 id="journeyTitle">Elige el ritmo de tus fotos.</h2></div><button id="journeyCancel" aria-label="Cancelar selección de template">Cerrar</button></header><p id="journeyStatus" role="status"></p><p class="journeyHelp">Ocho colecciones destacadas. Vistas previas con tus propias fotos.</p><button id="journeyCuts" type="button" aria-pressed="false">Rasgadas y cortes · Nueva serie</button><div class="journeyFilters" role="group" aria-label="Filtrar templates"><button data-filter="minimal">Minimalistas</button><button data-filter="mosaic">Mosaicos</button><button data-filter="panorama">Panorámicas</button></div><label class="journeyFormat">Formato<select id="journeyFormat" aria-label="Formato de vista previa"></select></label><button id="journeyPreview" disabled>Recorrer colección elegida</button><input id="journeySearch" type="search" aria-label="Buscar colecciones" placeholder="Buscar por nombre o estilo…"><div id="journeyCards"></div><button id="journeyMore">Ver todos los templates</button><details class="journeyLocation"><summary>¿Incluir locación? <span>Opcional</span></summary><label>Mostrar una sola vez<select id="journeyLocation"><option value="off">Sin locación</option><option value="first">En la primera página</option><option value="middle">En el medio</option><option value="last">Al final</option></select></label><label>Lugar <input id="journeyPlace" maxlength="80" placeholder="Automático desde tus fotos"></label><small>Usamos el GPS de las fotos, si está disponible. Puedes escribir el lugar. Se procesa en este dispositivo.</small></details><footer><p id="journeyChoice" aria-live="polite">Preparando vistas previas…</p><div><button id="journeySurprise" disabled>Sorpréndeme</button><button id="journeyCreate" disabled>Crear carrusel ✦</button></div><small>Después ajustaremos composición y encuadres.</small></footer></section>`;
   document.body.append(modal);
   const format=modal.querySelector('#journeyFormat');FrameFormats.options.forEach(f=>format.append(new Option(f.name,f.id)));format.onchange=()=>{if(session?.photos){session.designs.clear();renderCards(session)}};
   const search=modal.querySelector('#journeySearch');search.style.cssText='width:100%;box-sizing:border-box;margin-bottom:14px;min-height:44px;font-size:16px';
@@ -44,7 +44,7 @@ const FrameJourney = (() => {
   function rank(photos){
     const wide=photos.filter(p=>p.aspect>1.5).length,portrait=photos.filter(p=>p.aspect<.9).length;
     return catalog.families.map(f=>({ ...f,match:
-      (f.id==='gallery_book'?8:0)+(f.id==='editorial_pair'?6:0)+
+      (FrameTemplateLayouts.featured.includes(f.id)?25:0)+(f.id==='gallery_book'?8:0)+(f.id==='editorial_pair'?6:0)+
       (f.id==='continuous'?(wide?14:-100):0)+
       (f.id==='museum_notes'&&photos.length>=9?13:0)+
       (f.id==='contact_press'&&photos.length>=12?12:0)+
@@ -53,11 +53,24 @@ const FrameJourney = (() => {
     })).sort((a,b)=>b.match-a.match);
   }
   const minimal=new Set(['gallery_book','full_bleed','offset_studies','margin_notes','linen_album','cinema_club']);
-  function visible(current){return current.ranked.filter(f=>(!current.search||searchable(f.name+' '+f.description).includes(searchable(current.search)))&&(!current.cuts||f.cutStyle)&&(!current.filter||(current.filter==='minimal'?minimal.has(f.id):current.filter==='panorama'?f.id==='continuous'||f.crossPage:f.variants.some(v=>v.photoCount>=4)))).filter((_,i)=>current.search||current.cuts||current.filter||current.all||i<4)}
+  function visible(current){return current.ranked.filter(f=>(!current.search||searchable(f.name+' '+f.description).includes(searchable(current.search)))&&(!current.cuts||f.cutStyle)&&(!current.filter||(current.filter==='minimal'?minimal.has(f.id):current.filter==='panorama'?f.id==='continuous'||f.crossPage:f.variants.some(v=>v.photoCount>=4)))).filter((_,i)=>current.search||current.cuts||current.filter||current.all||i<8)}
   modal.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{if(!session?.ranked)return;session.filter=session.filter===b.dataset.filter?null:b.dataset.filter;session.cuts=false;session.all=false;renderCards(session)});
-  const preview=document.createElement('dialog');preview.id='journeyLargePreview';preview.innerHTML='<header><b id="largePreviewTitle"></b><button id="closeLargePreview">Cerrar</button></header><div id="largePreviewPages"></div><button id="chooseLargePreview">Elegir este template</button>';modal.append(preview);
-  q('closeLargePreview').onclick=()=>preview.close();q('chooseLargePreview').onclick=()=>preview.close();
-  q('journeyPreview').onclick=()=>{if(!session?.selected)return;const card=modal.querySelector('[data-family="'+session.selected+'"]');q('largePreviewTitle').textContent=card.querySelector('strong').textContent;const pages=q('largePreviewPages');pages.replaceChildren(...[...card.querySelectorAll('.journeyPage')].map(p=>p.cloneNode(true)));preview.showModal()};
+  const preview=document.createElement('dialog');preview.id='journeyLargePreview';preview.innerHTML='<header><b id="largePreviewTitle"></b><button id="closeLargePreview">Cerrar</button></header><div id="largePreviewPages"></div><button id="chooseLargePreview">Usar esta colección</button>';modal.append(preview);
+  q('closeLargePreview').onclick=()=>preview.close();q('chooseLargePreview').onclick=()=>{preview.close();q('journeyCreate').click()};
+  q('journeyPreview').onclick=()=>{if(!session?.selected)return;const card=modal.querySelector('[data-family="'+session.selected+'"]');q('largePreviewTitle').textContent=card.querySelector('strong').textContent;const pages=q('largePreviewPages');pages.replaceChildren(...session.designs.get(session.selected).slides.map(previewPage));preview.showModal()};
+  function previewPage(sl){
+        const [W,H]=FrameFormats.dimensions(format.value),page=document.createElement('span');page.className='journeyPage';page.style.background=sl.bg;page.style.aspectRatio=W+'/'+H;page.style.setProperty('--page-ratio',W/H);
+        for(const layer of [...sl.layers].filter(l=>!l.hidden).sort((a,b)=>a.z-b.z)){
+          const box=document.createElement('span');box.style.cssText=`position:absolute;left:${layer.x/W*100}%;top:${layer.y/H*100}%;width:${layer.w/W*100}%;height:${(layer.h||layer.size)/H*100}%;transform:rotate(${layer.rot||0}deg);overflow:hidden;`;
+          if(layer.frameCut)box.style.clipPath=FrameCuts.css(layer.frameCut);
+          if(layer.type==='img'){const im=document.createElement('img'),g=FrameCrop.geometry(layer,layer.w,layer.h);im.src=layer.photo.url;im.alt='';im.style.cssText=`position:absolute;left:${g.x/layer.w*100}%;top:${g.y/layer.h*100}%;width:${g.w/layer.w*100}%;height:${g.h/layer.h*100}%;`;box.append(im);if(layer.frameBorder)box.style.outline='1px solid '+layer.frameBorderColor}
+          else if(layer.type==='deco'){box.style.background=layer.color;box.style.borderRadius=layer.kind==='circle'?'50%':'0'}
+          else{box.textContent=layer.text;box.style.fontFamily=ff(layer.font);box.style.color=layer.color;box.style.fontSize='5px'}
+          page.append(box);
+        }
+    return page;
+  }
+  const polish=document.createElement('style');polish.textContent=`.journeyPanel h2{font-size:30px;font-weight:400;letter-spacing:-.025em;line-height:1.1}.journeyTemplate{padding:12px!important;background:#18181c!important;border-radius:16px!important}.journeyTemplate[aria-pressed=true]:after{content:'Elegida';position:absolute;right:16px;top:12px;border-radius:6px;background:#eeeae2;color:#202024;font-size:10px;padding:4px 7px}.journeyTag{padding-right:55px;font-size:9px}.journeyTemplate strong{font:22px Georgia,serif!important;margin:14px 0 6px}.journeyTemplate small{font-size:12px!important;color:#a5a4ab}.journeyPreviews{gap:7px}.journeyPage{flex-basis:calc((100% - 14px)/3)}#journeyLargePreview{padding:16px;background:#111114;border:1px solid #414149;color:#eee;border-radius:20px;width:calc(100vw - 16px);max-width:760px;max-height:calc(100dvh - 24px)}#largePreviewPages{display:flex;overflow:auto;scroll-snap-type:x mandatory;gap:12px;padding:16px 0}#largePreviewPages .journeyPage{flex:0 0 min(84%,340px,calc(65dvh * var(--page-ratio,.8)));scroll-snap-align:center}#journeyLargePreview header{display:flex;align-items:center;justify-content:space-between;gap:8px}#journeyLargePreview button{min-height:44px;background:#efebe3;color:#19191c;border:0;border-radius:10px;padding:0 12px}#chooseLargePreview{width:100%}@media(min-width:700px){#journeyCards{grid-template-columns:1fr 1fr}}`;document.head.append(polish);
   function renderCards(current){
     if(session!==current)return;
     q('journeyCards').replaceChildren();
@@ -71,18 +84,7 @@ const FrameJourney = (() => {
       const previews=document.createElement('span');previews.className='journeyPreviews';previews.setAttribute('aria-hidden','true');
       let design=current.designs.get(family.id);
       if(!design){design=engine.generate({catalog,photos:current.photos,familyId:family.id,brief:answers(family.id),seed:current.seed,backgroundMode:S.frameBackground||'collection',backgroundColor:S.frameBackgroundColor,frameTreatment:S.frameTreatment||'gallery',format:format.value});current.designs.set(family.id,design)}
-      for(const sl of design.slides.slice(0,3)){
-        const [W,H]=FrameFormats.dimensions(format.value),page=document.createElement('span');page.className='journeyPage';page.style.background=sl.bg;page.style.aspectRatio=W+'/'+H;
-        for(const layer of [...sl.layers].filter(l=>!l.hidden).sort((a,b)=>a.z-b.z)){
-          const box=document.createElement('span');box.style.cssText=`position:absolute;left:${layer.x/W*100}%;top:${layer.y/H*100}%;width:${layer.w/W*100}%;height:${(layer.h||layer.size)/H*100}%;transform:rotate(${layer.rot||0}deg);overflow:hidden;`;
-          if(layer.frameCut)box.style.clipPath=FrameCuts.css(layer.frameCut);
-          if(layer.type==='img'){const im=document.createElement('img'),g=FrameCrop.geometry(layer,layer.w,layer.h);im.src=layer.photo.url;im.alt='';im.style.cssText=`position:absolute;left:${g.x/layer.w*100}%;top:${g.y/layer.h*100}%;width:${g.w/layer.w*100}%;height:${g.h/layer.h*100}%;`;box.append(im);if(layer.frameBorder)box.style.outline='1px solid '+layer.frameBorderColor}
-          else if(layer.type==='deco'){box.style.background=layer.color;box.style.borderRadius=layer.kind==='circle'?'50%':'0'}
-          else{box.textContent=layer.text;box.style.fontFamily=ff(layer.font);box.style.color=layer.color;box.style.fontSize='5px'}
-          page.append(box);
-        }
-        previews.append(page);
-      }
+      for(const sl of design.slides.slice(0,3))previews.append(previewPage(sl));
       const title=document.createElement('strong');title.textContent=family.name;
       const desc=document.createElement('small');desc.textContent=family.description;
       card.append(tag,previews,title,desc);

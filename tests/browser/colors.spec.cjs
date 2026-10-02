@@ -1,3 +1,4 @@
+const {designSelect,editorClick,closeDesign}=require('../support/editor.cjs');
 const {openTools}=require('../support/editor.cjs');
 const {test,expect}=require('@playwright/test'),fs=require('node:fs/promises'),path=require('node:path'),{png}=require('../support/color-fixture.cjs');
 const dir=path.resolve('test-results/color-fixtures'),measured=['#dc141e','#14a03c','#2346be','#e6bd28'];
@@ -6,7 +7,7 @@ async function prepare(page){
  await page.goto('/');const wait=page.waitForEvent('filechooser');await page.locator('#photosInput').click();await (await wait).setFiles(Array.from({length:8},(_,i)=>path.join(dir,'color-'+i+'.png')));
  await expect(page.locator('#templateJourney')).toBeVisible();expect(await page.locator('#backgroundSwatches button').count()).toBe(0);
  await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
- await page.evaluate(()=>S.frameBrief.purpose='memory');await page.locator('#templateFamily').selectOption('gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();
+ await page.evaluate(()=>S.frameBrief.purpose='memory');await designSelect(page,'#templateFamily','gallery_book');await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();
 }
 test('measured swatches support page/all scope, undo, variation, PNG and restore without changing crops',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));await prepare(page);
@@ -18,10 +19,10 @@ test('measured swatches support page/all scope, undo, variation, PNG and restore
  await page.locator('#backgroundScope').selectOption('all');await expect(page.locator('#backgroundSource')).toContainText('todo el carrusel');
  const choices=await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color));expect(choices).toHaveLength(4);const global=choices.find(c=>c!==local);
  await page.locator('[data-color="'+global+'"]').click();expect(await page.evaluate(()=>S.slides.every(s=>s.bg===S.frameBackgroundColor))).toBeTruthy();
- await page.locator('#undoBtn').click();expect(await page.evaluate(()=>S.slides.map(s=>s.bg))).toEqual(after);
- await page.locator('[data-color="'+global+'"]').click();await page.locator('#fastNewDesign').click();await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(await page.evaluate(()=>S.slides.every(s=>s.bg===S.frameBackgroundColor))).toBeTruthy();
+ await editorClick(page,'#undoBtn');expect(await page.evaluate(()=>S.slides.map(s=>s.bg))).toEqual(after);
+ await page.locator('[data-color="'+global+'"]').click();await editorClick(page,'#fastNewDesign');await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(await page.evaluate(()=>S.slides.every(s=>s.bg===S.frameBackgroundColor))).toBeTruthy();
  const pixel=await page.evaluate(async()=>{const f=await renderSlideToFile(0),im=await createImageBitmap(f),cv=document.createElement('canvas');cv.width=1080;cv.height=1350;const ctx=cv.getContext('2d');ctx.drawImage(im,0,0);return Array.from(ctx.getImageData(2,2,1,1).data)});expect(pixel.slice(0,3)).toEqual(global.slice(1).match(/../g).map(v=>parseInt(v,16)));
- await page.locator('#backgroundScope').selectOption('page');const local2=(await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color))).find(c=>c!==global);await page.locator('[data-color="'+local2+'"]').click();await page.locator('#fastNewDesign').click();await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(await page.evaluate(()=>S.slides[0].bg)).toBe(local2);expect(await page.evaluate(()=>S.slides.slice(1).every(s=>s.bg===S.frameBackgroundColor))).toBeTruthy();
+ await page.locator('#backgroundScope').selectOption('page');const local2=(await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color))).find(c=>c!==global);await page.locator('[data-color="'+local2+'"]').click();await editorClick(page,'#fastNewDesign');await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(await page.evaluate(()=>S.slides[0].bg)).toBe(local2);expect(await page.evaluate(()=>S.slides.slice(1).every(s=>s.bg===S.frameBackgroundColor))).toBeTruthy();
  await page.screenshot({path:'test-results/photo-backgrounds-'+test.info().project.name+'.png'});
  await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);expect(await page.evaluate(()=>S.slides[0].bg)).toBe(local2);expect(await page.evaluate(()=>S.frameBackgroundColor)).toBe(global);expect(errors).toEqual([]);
 });
@@ -31,7 +32,7 @@ test('legacy saved projects recover measured colors from their originals and sug
  await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);expect(await page.evaluate(()=>S.photos.every(p=>p.dominantColors.length>=2))).toBeTruthy();
  await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();const first=await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color));
  const index=await page.evaluate(first=>S.slides.findIndex(sl=>!first.includes(sl.layers.find(l=>l.type==='img').photo.dominantColors[0].hex)),first);
- expect(index).toBeGreaterThan(0);await page.locator('#filmstrip .thumb').nth(index).click();await expect(page.locator('#backgroundSource')).toContainText('página '+(index+1));
+ expect(index).toBeGreaterThan(0);await editorClick(page,page.locator('#filmstrip .thumb').nth(index));await expect(page.locator('#backgroundSource')).toContainText('página '+(index+1));
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));expect(await page.evaluate(()=>S.currentSlide)).toBe(index);
  const next=await page.locator('#backgroundSwatches button').evaluateAll(els=>els.map(e=>e.dataset.color));expect(next).not.toEqual(first);
 });

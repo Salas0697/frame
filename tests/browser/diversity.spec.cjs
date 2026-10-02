@@ -1,3 +1,4 @@
+const {designSelect,editorClick,closeDesign}=require('../support/editor.cjs');
 const {test,expect}=require('@playwright/test'),path=require('node:path'),fs=require('node:fs/promises');
 const {fixtureFetch}=require('../support/photo-fixtures.cjs'),catalog=require('../../frame/template-catalog.json');
 const ids=[10,20,24,28,29,42,43,47,48,49,50,54],files=[];
@@ -14,7 +15,7 @@ test('expanded library is searchable and produces distinct real-photo frames wit
  await page.evaluate(()=>{Math.random=window.qaRandom;delete window.qaRandom});await expect(page.locator('#templateFamily')).toHaveValue(lastVisible);
  await page.evaluate(()=>{S.frameBackground='collection';S.frameLastDesign=null;window.visualSamples=[]});
  for(const family of catalog.families){
-  await page.locator('#templateFamily').selectOption(family.id);
+  await designSelect(page,'#templateFamily',family.id);
   const result=await page.evaluate(async name=>{
    const shapes=S.slides.filter(s=>!s.storySpan).map(FrameTemplateEngine.geometry),duplicates=shapes.some((g,i)=>shapes.slice(0,i).some(other=>FrameTemplateEngine.distance(g,other)<.005));
    const file=await renderSlideToFile(0),im=await createImageBitmap(file);const size=[im.width,im.height];im.close();window.visualSamples.push({name,url:URL.createObjectURL(file)});
