@@ -32,7 +32,7 @@ const locations = JSON.stringify(cities.map(c=>[c.name,c.country,Number(c.lat),N
 const locationFile = `cities.${createHash('sha256').update(locations).digest('hex').slice(0,16)}.json`;
 await output('assets/locations/'+locationFile,locations);
 const exifr = await readFile(path.join(root,'node_modules/exifr/dist/lite.umd.js'),'utf8');
-const infrastructure = await Promise.all(['project-state.js','lifecycle.js','finish.js','export-delivery.js','project-file.js','narrative.js'].map(name => readFile(path.join(root,'frame',name),'utf8')));
+const infrastructure = await Promise.all(['project-state.js','lifecycle.js','finish.js','export-source.js','export-delivery.js','project-file.js','narrative.js'].map(name => readFile(path.join(root,'frame',name),'utf8')));
 const bundle = [exifr,...infrastructure,core[1], `window.FRAME_TEMPLATE_CATALOG=${JSON.stringify(catalog)};window.FRAME_LOCATION_DATA_FILE=${JSON.stringify(locationFile)};`, ...scripts].join('\n;\n');
 const hash = createHash('sha256').update(bundle).digest('hex').slice(0, 16);
 const filename = `frame.${hash}.js`;

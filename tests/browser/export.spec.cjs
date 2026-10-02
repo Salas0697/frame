@@ -36,6 +36,35 @@ test('export stays reachable while scrolling the mobile editor',async({page})=>{
  await page.locator('#fastExport').click();await expect(page.locator('#exportSheet')).toHaveClass(/on/);
  await page.screenshot({path:'test-results/export-visible-'+test.info().project.name+'.png'});
 });
+test('rejected image decoding recovers original pixels and releases every bitmap across repeat exports',async({page})=>{
+ await prepare(page);
+ const report=await page.evaluate(async()=>{
+  const decode=HTMLImageElement.prototype.decode,bitmap=createImageBitmap;let recovered=0,released=0;const pixels=[];
+  HTMLImageElement.prototype.decode=async function(){throw new DOMException('injected export decode failure','EncodingError')};
+  window.createImageBitmap=async function(blob,...args){const im=await bitmap(blob,...args),close=im.close.bind(im);recovered++;im.close=()=>{released++;close()};return im};
+  try{for(let round=0;round<2;round++)for(let i=0;i<S.slides.length;i++){
+   const file=await renderSlideToFile(i),im=await bitmap(file),cv=document.createElement('canvas');cv.width=im.width;cv.height=im.height;const x=cv.getContext('2d');x.drawImage(im,0,0);im.close();
+   for(const l of S.slides[i].layers.filter(l=>l.type==='img'&&!l.hidden))pixels.push([...x.getImageData(Math.round((l.x+l.w*.5)*1080/340),Math.round((l.y+l.h*.5)*1080/340),1,1).data]);
+   cv.width=cv.height=0;
+  }}finally{HTMLImageElement.prototype.decode=decode;window.createImageBitmap=bitmap}
+  return {pixels,recovered,released};
+ });
+ expect(report.recovered).toBe(24);expect(report.released).toBe(24);expect(report.pixels).toHaveLength(24);
+ for(const p of report.pixels){expect(p[0]).toBeGreaterThanOrEqual(160);expect(p[2]).toBeLessThanOrEqual(65);expect(p[3]).toBe(255)}
+});
+test('unrecoverable original decoding produces no incomplete download and permits a successful retry',async({page})=>{
+ await prepare(page);const downloads=[];page.on('download',d=>downloads.push(d));
+ const before=await page.evaluate(()=>JSON.stringify(S.slides));
+ await page.evaluate(()=>{
+  window.qaDecode=HTMLImageElement.prototype.decode;window.qaBitmap=createImageBitmap;
+  HTMLImageElement.prototype.decode=async()=>{throw new DOMException('decode failure','EncodingError')};window.createImageBitmap=async()=>{throw new DOMException('original also failed','EncodingError')};
+  Object.defineProperty(navigator,'share',{configurable:true,value:undefined});
+ });
+ await page.locator('#fastExport').click();await page.locator('#exportAllBtn').click();await expect(page.locator('#toast')).toContainText('No se pudo completar');await expect(page.locator('#loading')).toBeHidden();await expect(page.locator('#fastExport')).toBeEnabled();
+ expect(downloads).toHaveLength(0);expect(await page.evaluate(()=>JSON.stringify(S.slides))).toBe(before);
+ await page.evaluate(()=>{HTMLImageElement.prototype.decode=window.qaDecode;window.createImageBitmap=window.qaBitmap});
+ await page.locator('#fastExport').click();const pending=page.waitForEvent('download');await page.locator('#exportCurrentBtn').click();const file=await pending;expect(file.suggestedFilename()).toBe('FRAME_01.png');expect((await fs.stat(await file.path())).size).toBeGreaterThan(1000);
+});
 test('downloaded ZIP contains every page and every photograph after choosing a background',async({page})=>{
  await prepare(page);await page.evaluate(()=>{Object.defineProperty(navigator,'share',{configurable:true,value:undefined})});
  const samples=await page.evaluate(()=>S.slides.map(sl=>sl.layers.filter(l=>l.type==='img'&&!l.hidden).map(l=>({x:Math.round((l.x+l.w*.5)*1080/340),y:Math.round((l.y+l.h*.5)*1080/340)}))));
