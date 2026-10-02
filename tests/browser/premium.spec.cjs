@@ -1,3 +1,4 @@
+const {designSelect,editorClick,closeDesign}=require('../support/editor.cjs');
 const {openTools}=require('../support/editor.cjs');
 const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test');
@@ -37,7 +38,7 @@ for(const n of [8,10,12])test('real photo import '+n+' waits for brief and varia
  const phases=await page.evaluate(()=>window.importPhases);
  expect(phases).toContain('analysis');expect(phases.indexOf('templates')).toBeLessThan(phases.indexOf('analysis'));
  const before=await page.locator('#stage .slide').first().getAttribute('data-layout');
- await page.locator('#fastNewDesign').click();await expect(page.locator('#templateJourney')).toBeHidden();
+ await editorClick(page,'#fastNewDesign');await expect(page.locator('#templateJourney')).toBeHidden();
  expect(await page.evaluate(()=>window.importPhases)).toEqual(phases);
  await expect(page.locator('#stats')).toContainText(n+' fotos');
  expect(errors).toEqual([]);
@@ -45,16 +46,16 @@ for(const n of [8,10,12])test('real photo import '+n+' waits for brief and varia
 });
 test('finishes, fixed page, crop transaction, cover, full miniatures and PNG export',async({page})=>{
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/');await upload(page,12);await page.locator('#templateFamily').selectOption('museum_notes');
+ await page.goto('/');await upload(page,12);await designSelect(page,'#templateFamily','museum_notes');
  await expect(page.locator('#stage .slide[data-layout="museum_9"] .imgLayer')).toHaveCount(9);
  await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();
  await page.locator('#frameBackground').selectOption('black');
- await page.locator('#frameTreatment').selectOption('fine');
+ await designSelect(page,'#frameTreatment','fine');
  expect(await page.locator('#stage .slide').first().evaluate(e=>getComputedStyle(e).backgroundColor)).toBe('rgb(16, 16, 18)');
  const grid=page.locator('#stage .slide[data-layout="museum_9"]');
- await grid.locator('..').locator('.pagePin').click();
+ await closeDesign(page);await page.locator('#pageJump').selectOption(String(await grid.getAttribute('data-slide')));await page.locator('#pageOrder').click();await page.locator('#premiumPagePin').click();await page.locator('#closePageOrder').click();
  const frozen=await grid.locator('.imgLayer').evaluateAll(els=>els.map(e=>[e.alt,e.getAttribute('style')]));
- await page.locator('#fastNewDesign').click();
+ await editorClick(page,'#fastNewDesign');
  expect(await grid.locator('.imgLayer').evaluateAll(els=>els.map(e=>[e.alt,e.getAttribute('style')]))).toEqual(frozen);
  expect(await page.locator('#filmstrip .miniPhoto').count()).toBe(12);
  await grid.locator('.imgLayer').first().click();
@@ -80,7 +81,7 @@ test('finishes, fixed page, crop transaction, cover, full miniatures and PNG exp
  expect(geometry.iw).toBeLessThanOrEqual(geometry.w+.1);expect(geometry.ih).toBeLessThanOrEqual(geometry.h+.1);
  // Pin cover; another option must retain that selected source as the opening photo.
  const name=await photo.getAttribute('alt');await photo.click();await page.locator('#uxEdit').click();await page.locator('#peHero').click();
- await page.locator('#fastNewDesign').click();await expect(page.locator('#stage .slide').first().locator('.imgLayer').first()).toHaveAttribute('alt',name);
+ await editorClick(page,'#fastNewDesign');await expect(page.locator('#stage .slide').first().locator('.imgLayer').first()).toHaveAttribute('alt',name);
  const png=await page.evaluate(async()=>{const file=await renderSlideToFile(0);const image=await createImageBitmap(file);return {w:image.width,h:image.height,size:file.size,type:file.type}});
  expect(png.w).toBe(1080);expect(png.h).toBe(1350);expect(png.size).toBeGreaterThan(1000);expect(png.type).toBe('image/png');
  expect(errors).toEqual([]);
@@ -103,7 +104,7 @@ test('collection library opens, closes, selects all new families and exports bot
  }
  await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#frameBackground').selectOption('auto');
  for(const treatment of ['print','darkroom']){
-  await page.locator('#frameTreatment').selectOption(treatment);
+  await designSelect(page,'#frameTreatment',treatment);
   const exported=await page.evaluate(async()=>{const sl=S.slides[0],paper=sl.layers.find(l=>l.framePaper),file=await renderSlideToFile(0),im=await createImageBitmap(file),cv=document.createElement('canvas');cv.width=1080;cv.height=1350;const ctx=cv.getContext('2d');ctx.drawImage(im,0,0);const sc=1080/340,pixel=ctx.getImageData(Math.round((paper.x+paper.w/2)*sc),Math.round((paper.y+paper.h*.97)*sc),1,1).data;return {width:im.width,height:im.height,pixel:Array.from(pixel),color:paper.color}});
   expect(exported.width).toBe(1080);expect(exported.height).toBe(1350);expect(exported.pixel.slice(0,3)).toEqual(treatment==='print'?[255,255,255]:[8,8,9]);
  }
@@ -112,19 +113,19 @@ test('collection library opens, closes, selects all new families and exports bot
 test('another option explores fresh collections, preserves recency on restore and varies a fixed cover without more analysis',async({page})=>{
  await page.addInitScript(()=>{window.importPhases=[];document.addEventListener('frame:import-phase',e=>window.importPhases.push(e.detail.phase))});
  await page.goto('/');await upload(page,12);
- await page.locator('#templateFamily').selectOption('');
+ await designSelect(page,'#templateFamily','');
  const phases=await page.evaluate(()=>window.importPhases),visited=[];
  for(let i=0;i<7;i++){
   const family=await page.locator('#stage .slide').first().getAttribute('data-family');expect(visited.slice(-3)).not.toContain(family);visited.push(family);
-  await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);await page.locator('#fastNewDesign').click();await expect(page.locator('#stage .slide').first()).not.toHaveAttribute('data-family',family);
+  await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);await editorClick(page,'#fastNewDesign');await expect(page.locator('#stage .slide').first()).not.toHaveAttribute('data-family',family);
  }
  expect(await page.evaluate(()=>window.importPhases)).toEqual(phases);await expect(page.locator('#templateJourney')).toBeHidden();
  const recent=await page.evaluate(()=>S.frameLastDesign.recentFamilies);
  await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);
  expect(await page.evaluate(()=>S.frameLastDesign.recentFamilies)).toEqual(recent);
- await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);await page.locator('#fastNewDesign').click();await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(recent).not.toContain(await page.locator('#stage .slide').first().getAttribute('data-family'));
- await page.locator('#templateFamily').selectOption('collector');
+ await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);await editorClick(page,'#fastNewDesign');await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(recent).not.toContain(await page.locator('#stage .slide').first().getAttribute('data-family'));
+ await designSelect(page,'#templateFamily','collector');
  const photo=page.locator('#stage .imgLayer').first();await photo.click();await page.locator('#uxEdit').click();await page.locator('#peHero').click();
  const before=await page.locator('#stage .slide').first().getAttribute('data-layout'),name=await page.locator('#stage .imgLayer').first().getAttribute('alt');
- await page.locator('#fastNewDesign').click();await expect(page.locator('#stage .slide').first()).not.toHaveAttribute('data-layout',before);await expect(page.locator('#stage .slide').first()).toHaveAttribute('data-family','collector');await expect(page.locator('#stage .imgLayer').first()).toHaveAttribute('alt',name);
+ await editorClick(page,'#fastNewDesign');await expect(page.locator('#stage .slide').first()).not.toHaveAttribute('data-layout',before);await expect(page.locator('#stage .slide').first()).toHaveAttribute('data-family','collector');await expect(page.locator('#stage .imgLayer').first()).toHaveAttribute('alt',name);
 });

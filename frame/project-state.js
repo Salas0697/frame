@@ -9,7 +9,7 @@
     frameInactivePhotoIds: [], frameFormat: '4:5', frameVariationScope: 'all', finish: 'clean', photoEditMode: 'crop', frameBrief: null,
     frameTemplateFamily: '', frameCaption: '', frameArtDirection: '',
     frameLastDesign: null, frameBackground: 'collection', frameBackgroundColor: null,
-    frameTreatment: 'gallery', frameNarrative: '', heroPhotoId: null, frameLocation: null
+    frameDesign: {spacing:'balanced',border:'collection'}, frameTreatment: 'gallery', frameNarrative: '', heroPhotoId: null, frameLocation: null
   };
   const copy = value => JSON.parse(JSON.stringify(value));
   function snapshot(state) {

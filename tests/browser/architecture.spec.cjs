@@ -1,3 +1,4 @@
+const {designSelect,editorClick,closeDesign,openDesign}=require('../support/editor.cjs');
 const {test,expect}=require('@playwright/test');
 const {png}=require('../support/color-fixture.cjs');
 
@@ -25,32 +26,32 @@ test('failed original storage preserves the saved project; export remains availa
  const saved=await page.evaluate(()=>localStorage.getItem(SAVE_KEY));
  await page.evaluate(()=>{FramePhotoStore.put=async()=>{throw new DOMException('quota','QuotaExceededError')}});
  await importPhotos(page,true,2);await expect(page.locator('#storageNotice')).toBeVisible();expect(await page.evaluate(()=>S.photos.length)).toBe(10);
- await page.locator('#fastNewDesign').click();await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(await page.evaluate(()=>localStorage.getItem(SAVE_KEY))).toBe(saved);
+ await editorClick(page,'#fastNewDesign');await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(await page.evaluate(()=>localStorage.getItem(SAVE_KEY))).toBe(saved);
  expect(await page.evaluate(async()=> (await renderSlideToFile(0)).size)).toBeGreaterThan(1000);
  await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);expect(await page.evaluate(()=>S.photos.length)).toBe(8);
- const ids=await page.evaluate(()=>S.photos.map(p=>p.id));page.once('dialog',d=>d.accept());await page.locator('#newBtn').click();await expect(page.locator('#uploadScreen')).toHaveClass(/on/);await expect(page.locator('#resumeBtn')).toBeHidden();
+ const ids=await page.evaluate(()=>S.photos.map(p=>p.id));page.once('dialog',d=>d.accept());await editorClick(page,'#newBtn');await expect(page.locator('#uploadScreen')).toHaveClass(/on/);await expect(page.locator('#resumeBtn')).toBeHidden();
  expect(await page.evaluate(async ids=>(await FramePhotoStore.read(ids)).size,ids)).toBe(0);
 });
 
-test('quick undo and regular redo restore one coherent brief and design',async({page})=>{
+test('undo and redo restore one coherent brief and design',async({page})=>{
  await detector(page);await page.goto('/');await importPhotos(page);
- await page.locator('#templateFamily').selectOption('collector');
+ await designSelect(page,'#templateFamily','collector');
  const original=await page.evaluate(()=>FrameProjectState.snapshot(S));
- await page.locator('#fastNewDesign').click();await expect(page.locator('.fastToastAction')).toHaveClass(/on/);await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);
+ await editorClick(page,'#fastNewDesign');await expect(page.locator('#undoBtn')).toBeEnabled();await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);
  const changed=await page.evaluate(()=>FrameProjectState.snapshot(S));
- await page.locator('.fastToastAction').click();expect(await page.evaluate(()=>FrameProjectState.snapshot(S))).toEqual(original);
- await page.locator('#redoBtn').click();expect(await page.evaluate(()=>FrameProjectState.snapshot(S))).toEqual(changed);
+ await editorClick(page,'#undoBtn');expect(await page.evaluate(()=>FrameProjectState.snapshot(S))).toEqual(original);
+ await editorClick(page,'#redoBtn');expect(await page.evaluate(()=>FrameProjectState.snapshot(S))).toEqual(changed);
  await page.locator('#browseCollections').click();await page.locator('#journeyMore').click();await page.locator('[data-family=full_bleed]').click();await page.locator('#journeyCreate').click();
- expect(await page.evaluate(()=>S.frameBrief.familyId)).toBe('full_bleed');await page.locator('#undoBtn').click();expect(await page.evaluate(()=>S.frameBrief)).toEqual(changed.frameBrief);
+ expect(await page.evaluate(()=>S.frameBrief.familyId)).toBe('full_bleed');await editorClick(page,'#undoBtn');expect(await page.evaluate(()=>S.frameBrief)).toEqual(changed.frameBrief);
 });
 
 test('metadata quota and reset failures retain the previous saved project and announce the failure',async({page})=>{
  await detector(page);await page.goto('/');await importPhotos(page);
  const saved=await page.evaluate(()=>localStorage.getItem(SAVE_KEY));
  await page.evaluate(()=>{const original=Storage.prototype.setItem;window.restoreStorage=()=>Storage.prototype.setItem=original;Storage.prototype.setItem=function(k,v){if(k===SAVE_KEY)throw new DOMException('quota','QuotaExceededError');return original.call(this,k,v)}});
- await page.locator('#fastNewDesign').click();await expect(page.locator('#storageNotice')).toBeVisible();expect(await page.evaluate(()=>localStorage.getItem(SAVE_KEY))).toBe(saved);
+ await editorClick(page,'#fastNewDesign');await expect(page.locator('#storageNotice')).toBeVisible();expect(await page.evaluate(()=>localStorage.getItem(SAVE_KEY))).toBe(saved);
  await page.evaluate(()=>window.restoreStorage());await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);
- await page.evaluate(()=>{FramePhotoStore.clear=async()=>{throw Error('storage locked')}});page.once('dialog',d=>d.accept());await page.locator('#newBtn').click();
+ await page.evaluate(()=>{FramePhotoStore.clear=async()=>{throw Error('storage locked')}});page.once('dialog',d=>d.accept());await editorClick(page,'#newBtn');
  await expect(page.locator('#toast')).toContainText('No pude eliminar');expect(await page.evaluate(()=>JSON.parse(localStorage.getItem(SAVE_KEY)).photos.length)).toBe(8);await expect(page.locator('#studioScreen')).toHaveClass(/on/);
 });
 
@@ -59,8 +60,8 @@ test('real JavaScript detector boxes are consumed; unavailable detection keeps w
  await page.goto('/');await importPhotos(page, false, 2);expect(await page.evaluate(()=>S.photos.every(p=>p.faceCount===1&&Math.abs(p.faces[0].x-.55)<.001))).toBe(true);
  const photo=page.locator('#stage .imgLayer').first();await photo.focus();await photo.press('Enter');await expect(page.locator('#photoEditV2')).toBeVisible();await page.locator('#peCancel').press('Escape');await expect(page.locator('#photoEditV2')).toBeHidden();
  await page.unroute('**/face_detection.js');await detector(page,true);await page.reload();await importPhotos(page);
- await expect(page.locator('#analysisNotice')).toBeVisible();
- await page.locator('#templateFamily').selectOption('cut_diagonal');
+ await openDesign(page);await expect(page.locator('#analysisNotice')).toBeVisible();await closeDesign(page);
+ await designSelect(page,'#templateFamily','cut_diagonal');
  expect(await page.evaluate(()=>S.slides.flatMap(s=>s.layers.filter(l=>l.type==='img')).every(l=>!l.frameCut&&Math.abs(l.w/l.h-l.photo.aspect)<.0001))).toBe(true);
 });
 

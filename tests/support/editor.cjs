@@ -1,2 +1,6 @@
-async function openTools(page){const tools=page.locator('#albumTools');if(await tools.getAttribute('open')===null)await tools.locator(':scope > summary').click()}
-module.exports={openTools};
+async function openDesign(page){if(!await page.locator('#premiumDesign').isVisible())await page.locator('#premiumDesignBtn').click()}
+async function closeDesign(page){if(await page.locator('#premiumDesign').isVisible())await page.locator('#closePremiumDesign').click()}
+async function openTools(page){await openDesign(page);const tools=page.locator('#albumTools');if(await tools.getAttribute('open')===null)await tools.locator(':scope > summary').click()}
+async function designSelect(page,selector,value){await openDesign(page);const control=page.locator(selector);if(!await control.isVisible()){await openTools(page);const details=page.locator('.editorialFinish').filter({has:page.getByText('Fondo y marco',{exact:true})});if(await details.getAttribute('open')===null)await details.locator('summary').click()}await control.selectOption(value);await closeDesign(page)}
+async function editorClick(page,selector){const open=await page.locator('#premiumDesign').isVisible();await closeDesign(page);await (typeof selector==='string'?page.locator(selector):selector).click();if(open&&await page.locator('#studioScreen.on').isVisible()&&selector!=='#newBtn')await openDesign(page)}
+module.exports={openTools,openDesign,closeDesign,designSelect,editorClick};

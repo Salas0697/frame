@@ -19,8 +19,8 @@ document.addEventListener('touchend',e=>{const el=e.target.closest?.('.imgLayer,
 document.addEventListener('click',e=>{const el=e.target.closest?.('.imgLayer,.textLayer');if(!el||el===armed)return;e.preventDefault();e.stopImmediatePropagation();selectOnly(el)},{capture:true});
 // Keyboard users can reach the same explicit editors without touch gestures.
 document.addEventListener('keydown',e=>{const el=e.target.closest?.('.imgLayer,.textLayer[tabindex]');if(!el||!['Enter',' '].includes(e.key))return;e.preventDefault();e.stopImmediatePropagation();selectOnly(el);openEditor()},{capture:true});
-// Double tap/click edits instead of moving.
-document.addEventListener('dblclick',e=>{const el=e.target.closest?.('.imgLayer,.textLayer');if(!el)return;e.preventDefault();e.stopImmediatePropagation();selectOnly(el);openEditor()},{capture:true});
+// Repeated photo taps keep selection stable; crop is an explicit action.
+document.addEventListener('dblclick',e=>{const el=e.target.closest?.('.imgLayer,.textLayer');if(!el)return;e.preventDefault();e.stopImmediatePropagation();selectOnly(el);if(!el.classList.contains('imgLayer'))openEditor()},{capture:true});
 // Add an unmistakable delete action inside the text editor itself.
 function injectDelete(){const sh=$('#textSheet');if(!sh||$('#uxTextActions'))return;const host=sh.querySelector('.sheetBody')||sh;const row=document.createElement('div');row.id='uxTextActions';row.className='textQuickEdit';row.innerHTML='<button id="uxDoneText">Listo</button><button class="danger" id="uxDeleteText">Eliminar texto</button>';host.appendChild(row);row.querySelector('#uxDoneText').onclick=()=>{closeSheets();disarm()};row.querySelector('#uxDeleteText').onclick=remove}
 injectDelete();const mo=new MutationObserver(injectDelete);mo.observe(document.body,{childList:true,subtree:true});

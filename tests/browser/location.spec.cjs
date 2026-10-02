@@ -1,3 +1,4 @@
+const {designSelect,editorClick,closeDesign}=require('../support/editor.cjs');
 const {openTools}=require('../support/editor.cjs');
 const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test'),fs=require('node:fs/promises'),path=require('node:path');
@@ -35,7 +36,7 @@ for(const position of ['first','middle','last'])test('GPS note '+position+' only
  await page.locator('.journeyLocation summary').click();await page.locator('#journeyLocation').selectOption('last');await page.locator('#journeyLocation').selectOption(position);expect(catalogRequests).toHaveLength(0);
  await done(page,position==='last');await note(page,position);expect(catalogRequests).toHaveLength(1);
  expect(catalogRequests[0]).not.toContain('73.626');
- await page.locator('#fastNewDesign').click();const index=await note(page,position);expect(catalogRequests).toHaveLength(1);await expect(page.locator('#templateJourney')).toBeHidden();
+ await editorClick(page,'#fastNewDesign');const index=await note(page,position);expect(catalogRequests).toHaveLength(1);await expect(page.locator('#templateJourney')).toBeHidden();
  const exported=await page.evaluate(async i=>{const f=await renderSlideToFile(i),im=await createImageBitmap(f),cv=document.createElement('canvas');cv.width=1080;cv.height=1350;const ctx=cv.getContext('2d');ctx.drawImage(im,0,0);const bg=ctx.getImageData(10,1260,1,1).data,data=ctx.getImageData(70,1250,940,85).data;let ink=0;for(let p=0;p<data.length;p+=4)if(Math.abs(data[p]-bg[0])+Math.abs(data[p+1]-bg[1])+Math.abs(data[p+2]-bg[2])>100)ink++;return {width:im.width,height:im.height,ink}},index);
  expect(exported.width).toBe(1080);expect(exported.height).toBe(1350);expect(exported.ink).toBeGreaterThan(30);
  await page.screenshot({path:'test-results/location-'+position+'-'+test.info().project.name+'.png'});
@@ -46,7 +47,7 @@ test('off skips metadata lookup; appended batch asks again and adds only one not
  await page.goto('/');await choose(page);await done(page);await expect(page.locator('#stage .locationLabel')).toHaveCount(0);expect(requests).toHaveLength(0);
  await choose(page,true,true);await page.locator('.journeyLocation summary').click();await page.locator('#journeyLocation').selectOption('last');await done(page);await note(page,'last');await expect(page.locator('#stats')).toContainText('16 fotos');
  await openTools(page);await page.getByText('Locación',{exact:true}).click();await page.locator('#locationPosition').selectOption('off');await expect(page.locator('#stage .locationLabel')).toHaveCount(0);
- await page.locator('#undoBtn').click();await note(page,'last');
+ await editorClick(page,'#undoBtn');await note(page,'last');
 });
 test('no GPS falls back to editable place, position updates remain singular',async({page})=>{
  await page.goto('/');await choose(page,false);await page.locator('.journeyLocation summary').click();await page.locator('#journeyLocation').selectOption('last');await done(page);

@@ -8,6 +8,7 @@
   const formats=typeof module==='object'&&module.exports?require('./formats.js'):window.FrameFormats;
   const colors=typeof module==='object'&&module.exports?require('./photo-colors.js'):window.FramePhotoColors;
   const style=typeof module==='object'&&module.exports?require('./template-style.js'):window.FrameTemplateStyle;
+  const layouts=typeof module==='object'&&module.exports?require('./template-layouts.js'):window.FrameTemplateLayouts;
   const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
   const aspect = p => Number(p.aspect || p.width / p.height || p.w / p.h) || 1;
   const faces = p => p.faces?.length ? p.faces : p.faceUnion ? [p.faceUnion] : [];
@@ -52,7 +53,7 @@
     for (const {s, i} of order) {
       const ranked = free.map(p => {
         let slot = s, c = crop(p, s.w * W, s.h * H);
-        if (p.faceAnalysisStatus==='unavailable' || (variant.photoCount === 1 && !(variant.id.startsWith('bleed_') && c.safe && c.retained >= .68))) { slot = fittedSlot(s, p, W, H); c = crop(p, slot.w * W, slot.h * H); }
+        if (p.faceAnalysisStatus==='unavailable' || (variant.photoCount === 1 && !((variant.id.startsWith('bleed_')||variant.id.startsWith('full_bleed_')) && c.safe && c.retained >= .68))) { slot = fittedSlot(s, p, W, H); c = crop(p, slot.w * W, slot.h * H); }
         const count = p.faceCount || faces(p).length, area = slot.w * slot.h;
         const dense = variant.photoCount > 1;
         const safe = c.safe && !(dense && count >= 3 && area < .28) && !(dense && count >= 2 && area < .14) && !(allowOverlap && (count || p.faceAnalysisStatus==='unavailable'));
@@ -112,7 +113,7 @@
   function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = '', heroPhotoId, backgroundMode = 'collection', frameTreatment = 'gallery', backgroundColor, format = '4:5'}) {
     const [W,H]=formats.dimensions(format);
     if (!photos.length) return {slides: [], familyId: null, signature: ''};
-    const random = seeded(seed), families = catalog.families;
+    const random = seeded(seed), families = catalog.families.map(f=>layouts.family(f,format));
     const weights = families.map(f => {
       let weight = f.initialWeight;
       if (f.preferPurpose.includes(brief.purpose)) weight *= 1.8;
@@ -146,9 +147,10 @@
         const x=Math.min(...bounds.map(b=>b.x)),y=Math.min(...bounds.map(b=>b.y)),w=Math.max(...bounds.map(b=>b.x+b.w))-x,h=Math.max(...bounds.map(b=>b.y+b.h))-y;
         const old=imgs.map(l=>({...l}));let best,merit=-1;
         // A uniform transform preserves every source crop, face and inter-image gap.
-        for(let i=0;i<24;i++){
+        for(let i=0;i<(family.curated?96:24);i++){
           const ceiling=Math.min(.96,(W-34)/w,(H*.87-42)/h),floor=Math.min(sl.frameHero ? .83 : .68,ceiling*.8);
-          const k=floor+random()*(ceiling-floor),tx=17+random()*Math.max(0,W-34-w*k),ty=21+random()*Math.max(0,H*.87-42-h*k);
+          const k=family.curated?Math.min(1,(W-24)/w,(H*.88-24)/h)*(.86+(i%16)*.01):floor+random()*(ceiling-floor);
+          const tx=family.curated?12+(i%3)/2*Math.max(0,W-24-w*k):17+random()*Math.max(0,W-34-w*k),ty=family.curated?12+(Math.floor(i/3)%5)/4*Math.max(0,H*.88-24-h*k):21+random()*Math.max(0,H*.87-42-h*k);
           imgs.forEach((l,j)=>{l.x=tx+(old[j].x-x)*k;l.y=ty+(old[j].y-y)*k;l.w=old[j].w*k;l.h=old[j].h*k});
           const g=geometry(sl),d=Math.min(...memory.map(other=>distance(g,other)));
           if(d>merit){merit=d;best=imgs.map(l=>({x:l.x,y:l.y,w:l.w,h:l.h}))}
@@ -165,7 +167,7 @@
         pool = pool.filter(p=>!used.has(p.id)); totalFit += assigned.fit; fitCount++;
       }
       const wantedHero=pool.find(p=>p.id===heroPhotoId);
-      if(wantedHero || (pool.length>=4 && ['story','impact'].includes(brief.purpose))){
+      if(wantedHero || (pool.length>=4 && (family.curated||['story','impact'].includes(brief.purpose)))){
         const hero=wantedHero||[...pool].sort((a,b)=>heroScore(b,W,H)-heroScore(a,W,H))[0];
         const covers=family.covers||[{id:'editorial_hero',slots:[{x:.08,y:.06,w:.84,h:.80}],captionRegion:{x:.08,y:.9,w:.84,h:.06}}];
         const freshCovers=covers.filter(v=>v.id!==previous?.layouts?.[0]);
@@ -219,7 +221,7 @@
           if (!a) continue;
           const native=family.variants.some(x=>x.id===v.id);
           const target=brief.density==='airy'?1.5:brief.density==='rich'?4:2.5;
-          let score=a.fit*8+(native?9:0)-Math.abs(v.photoCount-target)*2+random()*8;
+          let score=a.fit*8+(family.curated?a.assigned.reduce((n,r)=>n+r.slot.w*r.slot.h,0)*10:0)+(native?9:0)-Math.abs(v.photoCount-target)*2+random()*8;
           const shape=a.assigned.map(row=>[row.slot.x,row.slot.y,row.slot.w,row.slot.h,row.slot.rotation||0]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
           if([...seen,...(previous?.recentGeometry||[])].some(g=>distance(shape,g)<.045))score-=24;
           if (v.id===slides.at(-1)?.frameLayout) score-=5;

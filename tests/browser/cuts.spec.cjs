@@ -1,3 +1,4 @@
+const {designSelect,editorClick,closeDesign}=require('../support/editor.cjs');
 const {openTools}=require('../support/editor.cjs');
 const {fixtureFetch}=require('../support/photo-fixtures.cjs');
 const {test,expect}=require('@playwright/test'),fs=require('node:fs/promises'),path=require('node:path'),{png}=require('../support/color-fixture.cjs');
@@ -12,7 +13,7 @@ test('new cut series previews, creates, exports real masks, varies and restores'
  await page.locator('[data-family=torn_atelier]').click();await page.locator('#journeyCreate').click();await expect(page.locator('html')).toHaveAttribute('data-photo-import-phase','idle',{timeout:100000});
  await openTools(page);await page.getByText('Fondo y marco',{exact:true}).click();await page.locator('#backgroundScope').selectOption('all');await page.locator('#frameBackground').selectOption('black');
  for(const family of families){
-  await page.locator('#templateFamily').selectOption(family);
+  await designSelect(page,'#templateFamily',family);
   expect(await page.locator('#stage .photoClip').first().evaluate(e=>e.style.clipPath)).toContain('polygon');
   expect(await page.locator('#filmstrip .miniPhoto').first().evaluate(e=>e.style.clipPath)).toContain('polygon');
   const pixels=await page.evaluate(async()=>{
@@ -23,7 +24,7 @@ test('new cut series previews, creates, exports real masks, varies and restores'
   });
   expect(pixels.center.slice(0,3)).toEqual([220,40,50]);expect(pixels.outside.slice(0,3)).not.toEqual([220,40,50]);
   await page.screenshot({path:'test-results/cuts-'+family+'-'+test.info().project.name+'.png'});
-  await page.locator('#fastNewDesign').click();await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(await page.evaluate(()=>S.frameTemplateFamily)).toBe(family);expect(await page.evaluate(()=>new Set(S.slides.flatMap(s=>s.layers.filter(l=>l.type==='img').map(l=>l.photo.id))).size)).toBe(8);
+  await editorClick(page,'#fastNewDesign');await expect(page.locator('.quickbar')).not.toHaveClass(/busy/);expect(await page.evaluate(()=>S.frameTemplateFamily)).toBe(family);expect(await page.evaluate(()=>new Set(S.slides.flatMap(s=>s.layers.filter(l=>l.type==='img').map(l=>l.photo.id))).size)).toBe(8);
  }
  const before=await page.evaluate(()=>S.slides.map(s=>s.layers.map(l=>l.frameCut||null)));await page.reload();await page.locator('#resumeBtn').click();await expect(page.locator('#studioScreen')).toHaveClass(/on/);expect(await page.evaluate(()=>S.slides.map(s=>s.layers.map(l=>l.frameCut||null)))).toEqual(before);expect(errors).toEqual([]);
 });
