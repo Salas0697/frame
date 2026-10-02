@@ -7,7 +7,9 @@ async function prepare(page){
 }
 test('mobile photos lead the editor; comparing and closing leave every saved adjustment untouched; choosing is undoable',async({page})=>{
  await prepare(page);await expect(page.locator('#projectStatus')).toHaveText('Guardado');expect(await page.locator('#albumTools').getAttribute('open')).toBeNull();
- const box=await page.locator('#stage .slide').first().boundingBox();expect(box.y).toBeLessThan(350);await expect(page.locator('.dock')).toBeHidden();
+ // The responsive viewport can replace a slide between resolving its handle and measuring it.
+ // Wait for the actual layout condition, retaining the same position requirement.
+ await expect.poll(async()=>{const box=await page.locator('#stage .slide').first().boundingBox();return box?.y??Infinity}).toBeLessThan(350);await expect(page.locator('.dock')).toBeHidden();
  const before=await page.evaluate(()=>FrameProjectState.snapshot(S)),saved=await page.evaluate(()=>localStorage.getItem(SAVE_KEY));
  await openTools(page);await page.locator('#compareAlbumBtn').click();await expect(page.locator('#albumCompare')).toBeVisible();await expect(page.locator('.albumProposal')).toHaveCount(4);expect(await page.evaluate(()=>FrameProjectState.snapshot(S))).toEqual(before);expect(await page.evaluate(()=>localStorage.getItem(SAVE_KEY))).toBe(saved);
  await page.getByRole('button',{name:'B · Ritmo',exact:true}).click();await page.locator('#closeComparison').press('Escape');await expect(page.locator('#compareAlbumBtn')).toBeFocused();expect(await page.evaluate(()=>FrameProjectState.snapshot(S))).toEqual(before);
