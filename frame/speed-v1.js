@@ -24,7 +24,7 @@ function offerUndo(label){quickUndo=S.history.at(-1);undoAction.classList.add('o
 undoAction.onclick=()=>{if(!quickUndo||busy)return;if(S.history.at(-1)===quickUndo){undo();toast('Deshecho')}quickUndo=null;undoAction.classList.remove('on')};
 FrameLifecycle.on('afterRender',()=>{if(quickUndo&&S.history.at(-1)!==quickUndo){quickUndo=null;undoAction.classList.remove('on')}});
 function startPhotoFlow(){if(!busy)window.framePhotoImport.selectPhotos()}
-$('#fastNewDesign').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow();return}setBusy(true);requestAnimationFrame(()=>{try{if(typeof window.FRAME_rebuildStory==='function')window.FRAME_rebuildStory();else fire('#directorBtn','#randomBtn');remember();offerUndo('Otra opción lista')}finally{setTimeout(()=>setBusy(false),180)}})};
+$('#fastNewDesign').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow();return}setBusy(true);requestAnimationFrame(()=>{try{const changed=typeof window.FRAME_rebuildStory==='function'?window.FRAME_rebuildStory():fire('#directorBtn','#randomBtn');if(changed!==false){remember();offerUndo('Otra opción lista')}}finally{setTimeout(()=>setBusy(false),180)}})};
 $('#fastExport').onclick=()=>{if(busy)return;if(emptyState()){startPhotoFlow();return}openSheet('#exportSheet')};
 $('#fastAdd').onclick=startPhotoFlow;$('#emptyAdd').onclick=startPhotoFlow;
 const exportTool=$('#exportBtn');if(exportTool)exportTool.onclick=()=>{if(!busy&&!exportBusy)openSheet('#exportSheet')};
@@ -57,7 +57,7 @@ window.framePhotoImport=new PhotoImportController({
   yieldToPaint:()=>new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0))),
   analyzePhotos:FramePhotoAnalysis.analyzePhotos,
   checkpoint:()=>({state:clone(S),studio:studio.classList.contains('on')}),
-  commitPhotos:(photos,answers)=>{S.photos=[...S.photos,...photos];S.frameBrief=answers;S.frameTemplateFamily=answers.familyId;S.frameLocation=FramePhotoLocation.settings(answers,S.photos);persistenceWarning=false;S.storageReady=false},
+  commitPhotos:(photos,answers)=>{S.photos=[...S.photos,...photos];S.frameBrief=answers;window.FRAME_setFormat?.(answers.format||S.frameFormat,false);S.frameTemplateFamily=answers.familyId;S.frameLocation=FramePhotoLocation.settings(answers,S.photos);persistenceWarning=false;S.storageReady=false},
   generateStoryboard:()=>buildSlides(),
   render:showStudio,
   persistPhotos:async(files,photos)=>{

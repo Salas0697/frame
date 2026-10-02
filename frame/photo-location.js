@@ -48,10 +48,10 @@
   function index(position,length){return position==='first'?0:position==='middle'?Math.floor((length-1)/2):length-1}
   function transform(sl,k,dx,dy){
     for(const l of sl.layers){l.x=l.x*k+dx;l.y=l.y*k+dy;if(Number.isFinite(l.w))l.w*=k;if(Number.isFinite(l.h))l.h*=k;if(Number.isFinite(l.size))l.size*=k}
-    const r=sl.frameCaptionRegion;if(r){r.x=r.x*k+dx/340;r.y=r.y*k+dy/425;r.w*=k;if(r.h)r.h*=k}
+    const r=sl.frameCaptionRegion;if(r){r.x=r.x*k+dx/340;r.y=r.y*k+dy/(sl.frameFormat==='1:1'?340:sl.frameFormat==='9:16'?340*16/9:425);r.w*=k;if(r.h)r.h*=k}
   }
   function strip(slides){for(const sl of slides){sl.layers=sl.layers.filter(l=>!l.frameLocation);const space=sl.frameLocationSpace;if(space){transform(sl,1/space.k,-space.dx/space.k,-space.dy/space.k);delete sl.frameLocationSpace}}}
-  function bounds(sl){let bottom=425;for(const l of sl.layers){if(l.hidden)continue;const h=l.type==='text'?l.size*Math.max(1,Math.ceil(l.text.length/Math.max(1,l.w/(l.size*.6)))):l.h;const a=(l.rot||0)*Math.PI/180;bottom=Math.max(bottom,l.y+h/2+Math.abs(l.w*Math.sin(a))/2+Math.abs(h*Math.cos(a))/2)}return bottom}
+  function bounds(sl){let bottom=sl.frameFormat==='1:1'?340:sl.frameFormat==='9:16'?340*16/9:425;for(const l of sl.layers){if(l.hidden)continue;const h=l.type==='text'?l.size*Math.max(1,Math.ceil(l.text.length/Math.max(1,l.w/(l.size*.6)))):l.h;const a=(l.rot||0)*Math.PI/180;bottom=Math.max(bottom,l.y+h/2+Math.abs(l.w*Math.sin(a))/2+Math.abs(h*Math.cos(a))/2)}return bottom}
   function decorate(slides,config,ink){
     const selected=slides[index(config?.position,slides.length)],key=JSON.stringify([config?.enabled,config?.text,config?.position]);
     const existing=slides.flatMap(sl=>sl.layers.filter(l=>l.frameLocation).map(l=>({sl,l})));
@@ -61,12 +61,13 @@
     if(!config?.enabled||!clean(config.text)||!slides.length)return;
     const target=slides[index(config.position,slides.length)];
     const group=target.storySpan?slides.filter(sl=>sl.storySpan?.photoId===target.storySpan.photoId):[target];
-    const k=Math.min(.89,376/Math.max(...group.map(bounds))),dx=170*(1-k),dy=6;
+    const H=target.frameFormat==='1:1'?340:target.frameFormat==='9:16'?340*16/9:425;
+    const k=Math.min(.89,(H-49)/Math.max(...group.map(bounds))),dx=170*(1-k),dy=6;
     for(const sl of group){transform(sl,k,dx,dy);sl.frameLocationSpace={k,dx,dy}}
     const lines=[];let line='';for(const word of clean(config.text).split(' ')){for(const part of word.match(/.{1,36}/gu)||[]){if(line&&line.length+part.length+1>36){lines.push(line);line=''}line+=(line?' ':'')+part}}if(line)lines.push(line);
     const text=lines.slice(0,3).join('\n'),size=7.5;
     target.frameLocationKey=key;
-    target.layers.push({id:'frame-location-'+target.id,type:'text',text,x:24,y:395,w:292,size,color:ink(target.bg),font:'mono',weight:400,rot:0,z:45,hidden:false,locked:true,frameLocation:true});
+    target.layers.push({id:'frame-location-'+target.id,type:'text',text,x:24,y:H-30,w:292,size,color:ink(target.bg),font:'mono',weight:400,rot:0,z:45,hidden:false,locked:true,frameLocation:true});
   }
   return {read,enrich,enrichSaved,nearest,distance,summarize,settings,index,strip,decorate,clean};
 });

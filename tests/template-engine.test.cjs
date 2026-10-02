@@ -103,6 +103,7 @@ test('photographic paper and dark mounts preserve the crop and reserve a larger 
   const plain=engine.generate({catalog,photos:source,familyId:f.id,seed:16});
   const framed=engine.generate({catalog,photos:source,familyId:f.id,seed:16,frameTreatment:treatment});verify(framed,source);
   for(let i=0;i<framed.slides.length;i++){
+   if(framed.slides[i].storySpan)continue; // Connected panoramas use their continuous paper edge.
    const images=framed.slides[i].layers.filter(l=>l.type==='img'),papers=framed.slides[i].layers.filter(l=>l.framePaper);
    assert.equal(images.length,papers.length);
    images.forEach((l,j)=>{const old=plain.slides[i].layers.filter(l=>l.type==='img')[j],paper=papers[j];assert.equal(l.offX,old.offX);assert.equal(l.offY,old.offY);assert.ok(Math.abs(l.w/l.h-old.w/old.h)<1e-9);assert.ok(paper.y+paper.h-l.y-l.h>l.y-paper.y);assert.equal(paper.color,treatment==='print'?'#ffffff':'#080809')});

@@ -37,7 +37,7 @@
   }
   $('#albumDirection').onchange=()=>{if(blocked()||!S.photos.length)return;pushHistory();S.frameNarrative=$('#albumDirection').value;window.FRAME_generateStory();renderAll()};
   function thumbnail(slide){
-    const wrap=document.createElement('div');wrap.className='proposalPage';wrap.style.background=slide.bg;wrap.style.filter=FrameFinish.filter(S.finish);
+    const wrap=document.createElement('div');wrap.className='proposalPage';wrap.style.height=FrameFormats.dimensions(slide.frameFormat||S.frameFormat)[1]*.3+'px';wrap.style.background=slide.bg;wrap.style.filter=FrameFinish.filter(S.finish);
     for(const l of [...slide.layers].filter(l=>!l.hidden).sort((a,b)=>a.z-b.z)){
       let el;
       if(l.type==='img'){
@@ -109,7 +109,7 @@
       const restored=new Map(project.photos.map((photo,i)=>{const url=URL.createObjectURL(files[i]);urls.push(url);return [photo.id,{...photo,id:uid(),url}]}));
       project.photos=project.photos.map(p=>restored.get(p.id));
       project.slides.forEach(sl=>{if(sl.storySpan)sl.storySpan.photoId=restored.get(sl.storySpan.photoId)?.id;sl.layers.forEach(l=>{if(l.type==='img')l.photo=restored.get(l.photo.id)})});
-      project.heroPhotoId=restored.get(project.heroPhotoId)?.id||null;
+      project.heroPhotoId=restored.get(project.heroPhotoId)?.id||null;project.frameInactivePhotoIds=(project.frameInactivePhotoIds||[]).map(id=>restored.get(id)?.id).filter(Boolean);
       previous=S;S={...project,storageReady:false,history:[],future:[],selected:null,selectedType:null};
       $('#uploadScreen').classList.remove('on');studio.classList.add('on');$('#newBtn').style.display='block';renderAll();
       const saved=await persist();previous.photos.forEach(p=>URL.revokeObjectURL(p.url));

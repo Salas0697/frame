@@ -5,6 +5,7 @@
   else root.FrameTemplateEngine = api;
 })(typeof window !== 'undefined' ? window : this, function() {
   const W = 340, H = 425;
+  const formats=typeof module==='object'&&module.exports?require('./formats.js'):window.FrameFormats;
   const colors=typeof module==='object'&&module.exports?require('./photo-colors.js'):window.FramePhotoColors;
   const style=typeof module==='object'&&module.exports?require('./template-style.js'):window.FrameTemplateStyle;
   const clamp = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
@@ -35,14 +36,14 @@
     return {offX: vw < .999 ? (x / (1 - vw) - .5) * 100 : 0,
       offY: vh < .999 ? (y / (1 - vh) - .5) * 100 : 0, safe, visible: {x, y, w: vw, h: vh}, retained: vw * vh};
   }
-  function fittedSlot(slot, p) {
+  function fittedSlot(slot, p, W=340, H=425) {
     const result = {...slot};
     const target = slot.w * W / (slot.h * H), ratio = aspect(p);
     if (ratio > target) { result.h = slot.w * W / ratio / H; result.y += (slot.h - result.h) / 2; }
     else { result.w = slot.h * H * ratio / W; result.x += (slot.w - result.w) / 2; }
     return result;
   }
-  function assign(variant, pool, random, allowOverlap = false) {
+  function assign(variant, pool, random, allowOverlap = false, W=340, H=425) {
     if (variant.photoCount > pool.length) return null;
     const free = [...pool], assigned = new Array(variant.slots.length);
     // Constrained small cells get first choice; groups remain available for large slots.
@@ -51,7 +52,7 @@
     for (const {s, i} of order) {
       const ranked = free.map(p => {
         let slot = s, c = crop(p, s.w * W, s.h * H);
-        if (p.faceAnalysisStatus==='unavailable' || (variant.photoCount === 1 && !(variant.id.startsWith('bleed_') && c.safe && c.retained >= .68))) { slot = fittedSlot(s, p); c = crop(p, slot.w * W, slot.h * H); }
+        if (p.faceAnalysisStatus==='unavailable' || (variant.photoCount === 1 && !(variant.id.startsWith('bleed_') && c.safe && c.retained >= .68))) { slot = fittedSlot(s, p, W, H); c = crop(p, slot.w * W, slot.h * H); }
         const count = p.faceCount || faces(p).length, area = slot.w * slot.h;
         const dense = variant.photoCount > 1;
         const safe = c.safe && !(dense && count >= 3 && area < .28) && !(dense && count >= 2 && area < .14) && !(allowOverlap && (count || p.faceAnalysisStatus==='unavailable'));
@@ -65,9 +66,9 @@
     }
     return {assigned, fit: fit / assigned.length};
   }
-  function canSpread(p, span) {
+  function canSpread(p, span, W=340, H=425) {
     if (p.faceAnalysisStatus==='unavailable') return false;
-    if (aspect(p) < span * .8 * .8) return false;
+    if (aspect(p) < span * (W/H) * .8) return false;
     const c = crop(p, W * span, H);
     if (!c.safe) return false;
     // A face can fit the composite while still being severed at a page boundary.
@@ -77,7 +78,7 @@
       return true;
     });
   }
-  function heroScore(p){
+  function heroScore(p,W=340,H=425){
     const brightness=Number(p.brightness??128),exposure=1-Math.min(1,Math.abs(brightness-128)/128);
     const sharp=Math.log1p(Math.max(0,Number(p.sharpness??p.variance??0)));
     const resolution=Math.min(1,Math.min(p.width||p.w||1000,p.height||p.h||1000)/1400);
@@ -93,6 +94,7 @@
   }
   // Compare the result after contain-fitting, without names, layer IDs or photo order.
   function geometry(sl) {
+    const [W,H]=formats.dimensions(sl.frameFormat);
     return sl.layers.filter(l=>l.type==='img'&&!l.hidden).map(l=>[l.x/W,l.y/H,l.w/W,l.h/H,l.rot||0]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
   }
   function distance(a,b){
@@ -107,7 +109,8 @@
     words.forEach(word=>{const last=lines.length-1;if((lines[last]+' '+word).trim().length>40 && lines[last])lines.push(word);else lines[last]=(lines[last]+' '+word).trim()});
     return lines.join('\n');
   }
-  function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = '', heroPhotoId, backgroundMode = 'collection', frameTreatment = 'gallery', backgroundColor}) {
+  function generate({catalog, photos, brief = {}, familyId, previous, seed = Date.now(), caption = '', heroPhotoId, backgroundMode = 'collection', frameTreatment = 'gallery', backgroundColor, format = '4:5'}) {
+    const [W,H]=formats.dimensions(format);
     if (!photos.length) return {slides: [], familyId: null, signature: ''};
     const random = seeded(seed), families = catalog.families;
     const weights = families.map(f => {
@@ -119,7 +122,7 @@
       if (brief.vibe === 'bold' && f.id === 'soft_scrapbook') weight *= 5;
       if (brief.purpose === 'showcase' && f.id === 'museum_notes') weight *= 2.5;
       // Recency is handled as eligibility, so high weights cannot immediately repeat.
-      if (f.id==='continuous' && !photos.some(p=>canSpread(p,2))) weight=0;
+      if (f.id==='continuous' && !photos.some(p=>canSpread(p,2,W,H))) weight=0;
       return {f, weight};
     });
     const recent = [...new Set([...(previous?.recentFamilies||[]),previous?.dir].filter(Boolean))].slice(-3);
@@ -134,7 +137,7 @@
       const uid = () => `tpl_${seed}_${attempt}_${++serial}`;
       const layer = (p, slot, c, index = 0) => ({id:uid(),type:'img',photo:p,x:slot.x*W,y:slot.y*H,w:slot.w*W,h:slot.h*H,
         rot:slot.rotation||0,zoom:1,offX:c.offX,offY:c.offY,z:10+index,hidden:false,locked:false,moveMode:'crop',storyAuto:true});
-      const page = kind => ({id:uid(),bg,layers:[],palette:null,favorite:false,frameAuto:true,frameFamily:family.id,frameLayout:kind});
+      const page = kind => ({id:uid(),bg,frameFormat:formats.get(format).id,layers:[],palette:null,favorite:false,frameAuto:true,frameFamily:family.id,frameLayout:kind});
       const seen=[];
       function distinguish(sl){
         const original=geometry(sl),memory=[...seen,...(previous?.recentGeometry||[])];
@@ -163,13 +166,13 @@
       }
       const wantedHero=pool.find(p=>p.id===heroPhotoId);
       if(wantedHero || (pool.length>=4 && ['story','impact'].includes(brief.purpose))){
-        const hero=wantedHero||[...pool].sort((a,b)=>heroScore(b)-heroScore(a))[0];
+        const hero=wantedHero||[...pool].sort((a,b)=>heroScore(b,W,H)-heroScore(a,W,H))[0];
         const covers=family.covers||[{id:'editorial_hero',slots:[{x:.08,y:.06,w:.84,h:.80}],captionRegion:{x:.08,y:.9,w:.84,h:.06}}];
         const freshCovers=covers.filter(v=>v.id!==previous?.layouts?.[0]);
         const cover=(freshCovers.length?freshCovers:covers)[attempt % (freshCovers.length||covers.length)];
         const box=cover.slots[0];
         const fit=crop(hero,box.w*W,box.h*H);
-        const slot=hero.faceAnalysisStatus!=='unavailable' && fit.safe && fit.retained>.82 ? box : fittedSlot(box,hero);
+        const slot=hero.faceAnalysisStatus!=='unavailable' && fit.safe && fit.retained>.82 ? box : fittedSlot(box,hero,W,H);
         const c=crop(hero,slot.w*W,slot.h*H),sl=page(cover.id);
         sl.layers.push(layer(hero,slot,c));sl.frameHero=true;
         distinguish(sl);
@@ -182,14 +185,14 @@
         const max = family.id==='contact_press' ? (brief.density==='airy'?4:brief.density==='rich'?12:8) : brief.density === 'airy' && brief.purpose !== 'showcase' ? 6 : 9;
         const eligible = grids.filter(v=>v.photoCount<=max && v.photoCount<=pool.length);
         for (const v of eligible) {
-          const assigned = assign(v,pool,random);
+          const assigned = assign(v,pool,random,false,W,H);
           if (assigned) { append(v,assigned); break; }
         }
       }
-      if (family.id === 'continuous') {
+      if (family.id === 'continuous'||family.crossPage) {
         const variants = family.variants.filter(v=>v.pageSpan>1).map(v=>({v,key:random()})).sort((a,b)=>a.key-b.key).map(row=>row.v);
         for (const v of variants) {
-          const p = [...pool].sort(()=>random()-.5).find(p=>canSpread(p,v.pageSpan));
+          const p = [...pool].sort(()=>random()-.5).find(p=>canSpread(p,v.pageSpan,W,H));
           if (!p) continue;
           const c = crop(p,W*v.pageSpan,H);
           for (let i=0;i<v.pageSpan;i++) {
@@ -212,7 +215,7 @@
         const ranked=[];
         for (const v of options) {
           if (v.photoCount>pool.length) continue;
-          const a=assign(v,pool,random,family.allowOverlap && v.id.startsWith('scrapbook'));
+          const a=assign(v,pool,random,family.allowOverlap && v.id.startsWith('scrapbook'),W,H);
           if (!a) continue;
           const native=family.variants.some(x=>x.id===v.id);
           const target=brief.density==='airy'?1.5:brief.density==='rich'?4:2.5;
@@ -239,7 +242,12 @@
         captionSlide.layers.push({id:uid(),type:'text',text:captionLines(note),x:r.x*W,y:r.y*H,w:r.w*W,size:6.5,color:'#222222',font:'mono',weight:400,rot:0,z:40,hidden:false,locked:false,userTouched:true,frameCaption:true});
       }
       for(const sl of slides){
-        if(sl.storySpan)continue;
+        if(sl.storySpan){
+          if(family.cutStyle){const l=sl.layers[0],cut={kind:family.cutStyle,seed:(seed+7919)>>>0},u=union(l.photo),c=crop(l.photo,l.w,l.h),safe=l.photo.faceAnalysisStatus!=='unavailable'&&(!u||(u.y>=c.visible.y+.04*c.visible.h&&u.y+u.h<=c.visible.y+.96*c.visible.h));
+            sl.layers.push({id:uid(),type:'deco',kind:'frame',x:l.x,y:l.y,w:l.w,h:l.h,rot:0,z:l.z-.25,color:'#f2eee5',frameCut:cut,cutPaper:true,hidden:false,locked:true});
+            l.x+=l.w*.014;l.y+=l.h*.014;l.w*=.972;l.h*=.972;if(safe)l.frameCut=cut;
+          }continue;
+        }
         style.decorate(sl,family,uid,slides.indexOf(sl));
         if(frameTreatment==='mat'){
           sl.layers.forEach(l=>{l.x=W*.045+l.x*.91;l.y=H*.045+l.y*.91;if(l.type==='img'||l.type==='deco'){l.w*=.91;l.h*=.91}else if(l.type==='text'){l.w*=.91;l.size*=.91}});

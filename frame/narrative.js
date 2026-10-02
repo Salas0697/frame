@@ -5,7 +5,7 @@
   function sequence(slides,direction){
     if(!directions[direction])return slides;
     const result=[...slides],slots=[];
-    for(let i=1;i<slides.length;i++)if(!slides[i].frameLocked&&!slides[i].storySpan)slots.push(i);
+    for(let i=1;i<slides.length;i++)if(!slides[i].frameLocked&&!slides[i].layers.some(l=>l.type==='img'&&l.locked)&&!slides[i].storySpan)slots.push(i);
     const rows=slots.map(i=>({slide:slides[i],...metrics(slides[i])}));
     const ordered=[],closing=slots.at(-1)===slides.length-1?rows.splice(rows.map((r,i)=>({i,score:r.density*1000+Math.abs(r.light-128)})).sort((a,b)=>a.score-b.score)[0].i,1)[0]:null;
     if(direction==='calm')ordered.push(...rows.sort((a,b)=>a.light-b.light||a.density-b.density));
