@@ -130,10 +130,8 @@ async function renderExportPage(i,sl,finish){
     x.fillStyle=sl.bg;x.fillRect(0,0,W,H);
     for(const l of [...sl.layers].filter(l=>!l.hidden).sort((a,b)=>a.z-b.z)){
       if(l.type==='img'){
-        const im=await loadImage(l.photo.url);
+        const source=await FrameExportSource.load(l.photo,{loadImage,fetch:url=>fetch(url),createImageBitmap:typeof createImageBitmap==='function'?blob=>createImageBitmap(blob):null}),im=source.image;
         try{
-          if(im.decode)await im.decode();
-          if(!im.naturalWidth||!im.naturalHeight)throw new Error('Photo could not be decoded: '+l.photo.name);
           x.save();
           try{
             x.translate((l.x+l.w/2)*sc,(l.y+l.h/2)*sc);x.rotate((l.rot||0)*Math.PI/180);
@@ -143,11 +141,11 @@ async function renderExportPage(i,sl,finish){
             // Clip in source coordinates too: never ask Safari to rasterize an
             // enormous zoomed original outside the visible photographic frame.
             const left=Math.max(0,g.x),top=Math.max(0,g.y),right=Math.min(l.w*sc,g.x+g.w),bottom=Math.min(l.h*sc,g.y+g.h);
-            if(right>left&&bottom>top)x.drawImage(im,(left-g.x)/g.w*im.naturalWidth,(top-g.y)/g.h*im.naturalHeight,(right-left)/g.w*im.naturalWidth,(bottom-top)/g.h*im.naturalHeight,-l.w*sc/2+left,-l.h*sc/2+top,right-left,bottom-top);
+            if(right>left&&bottom>top)x.drawImage(im,(left-g.x)/g.w*source.width,(top-g.y)/g.h*source.height,(right-left)/g.w*source.width,(bottom-top)/g.h*source.height,-l.w*sc/2+left,-l.h*sc/2+top,right-left,bottom-top);
           }finally{x.restore()}
           // Flush the draw before releasing its decoded source.
           x.getImageData(0,0,1,1);
-        }finally{im.removeAttribute('src')}
+        }finally{source.release()}
         if(l.frameBorder){x.save();x.translate((l.x+l.w/2)*sc,(l.y+l.h/2)*sc);x.rotate((l.rot||0)*Math.PI/180);x.strokeStyle=l.frameBorderColor||'#202020';x.lineWidth=l.frameBorder*sc;x.strokeRect(-l.w*sc/2,-l.h*sc/2,l.w*sc,l.h*sc);x.restore()}
       }
       if(l.type==='text'){
