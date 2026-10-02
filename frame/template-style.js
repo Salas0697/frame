@@ -8,7 +8,22 @@
     const add=(x,y,w,h,color=accent,z=2,kind='frame')=>sl.layers.push({id:uid(),type:'deco',kind,x:x*W,y:y*H,w:w*W,h:h*H,rot:0,z,color,hidden:false,locked:true,frameGraphic:true});
     const images=sl.layers.filter(l=>l.type==='img');
     if(recipe==='none'||!recipe)return;
-    if(['rule','margin','journal','rail','columns','hinge'].includes(recipe)){
+    if(['studio','instant','sage','lilac','travel','pop'].includes(recipe)){
+      if(recipe==='studio'){add(.08,.055,.84,.0015,'#9b9186');add(.08,.892,.18,.004,'#7b6554');add(.77,.892,.15,.0015,'#9b9186')}
+      if(recipe==='sage'){add(index%2?.56:.04,.04,.40,.26,'#d3d7c5',1,'circle');add(index%2?.05:.67,.69,.28,.20,'#d3d7c5',1,'circle');add(.08,.90,.84,.0015,'#7a806a')}
+      if(recipe==='lilac'){add(.045,.045,.91,.052,'#e8e0d0');add(.08,.88,.84,.0015,'#918199');add(.08,.90,.13,.008,'#918199')}
+      if(recipe==='travel'){add(0,0,.055,1,'#8b9e84');add(.91,.03,.06,.83,'#d7c8ad');add(.10,.90,.80,.002,'#8b9e84')}
+      if(recipe==='pop'){add(.055,.05,.23,.17,'#e48bb0');add(.70,.72,.25,.17,'#e48bb0');add(.06,.90,.27,.008,'#644275')}
+      for(const l of images){
+        const x=l.x/W,y=l.y/H,w=l.w/W,h=l.h/H;
+        const color=recipe==='pop'?'#fff8e5':recipe==='travel'?'#fcf8ef':'#fffdf8';
+        const pad=recipe==='instant'?.019:recipe==='studio'?.009:.013;
+        add(x-pad,y-pad,w+pad*2,h+pad*2+(recipe==='instant'?.055:0),color,l.z-.5);
+        if(recipe==='instant'){add(x+w*.35,y-.026,w*.30,.019,'#d3bea0',l.z-.25);add(x+w*.27,y+h+.027,w*.46,.0015,'#b5a48d',l.z-.25)}
+        if(recipe==='travel')add(x+w*.27,y-.024,w*.27,.022,'#c7b68f',l.z-.25);
+        if(recipe==='pop'){add(x-pad,y-pad,w+pad*2,.003,'#644275',l.z-.25);add(x-pad,y-pad,.003,h+pad*2,'#644275',l.z-.25)}
+      }
+    }else if(['rule','margin','journal','rail','columns','hinge'].includes(recipe)){
       const x=recipe==='hinge'?.5:recipe==='margin'?.13:.035;
       add(x,.06,.002,.81,ink);if(recipe==='journal')add(.055,.87,.84,.002,ink);
       if(recipe==='margin')for(let i=0;i<3;i++)add(.05,.13+i*.035,.045,.003,ink);
